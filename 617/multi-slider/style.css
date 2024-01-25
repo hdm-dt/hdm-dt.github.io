@@ -197,7 +197,7 @@
   /*pointer-events: none;
   /* z-index: 100; */
   box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
-  z-index: 17;
+  z-index: 14;
 }
 .slider-button3 {
   position: absolute;
@@ -213,7 +213,7 @@
   /*pointer-events: none;
   /* z-index: 100; */
   box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
-  z-index: 17;
+  z-index: 13;
 }
 .slider-button2 {
     position: absolute;
@@ -229,7 +229,7 @@
     /*pointer-events: none;
     /* z-index: 100; */
     box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
-    z-index: 17;
+    z-index: 12;
   }
   .slider-button1 {
     position: absolute;
@@ -245,7 +245,7 @@
     /*pointer-events: none;
     /* z-index: 100; */
     box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
-    z-index: 17;
+    z-index: 11;
   }
 
   .slider-number5 {
