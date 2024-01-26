@@ -73,3 +73,18 @@ slider5.addEventListener("input", (e) => {
   sliderButton5.style.left = sliderValue;
 });
 
+const slider6 = document.querySelector(".image-comparison .slider6");
+const contentImage6 = document.querySelector(".image-comparison .image6");
+const sliderLine6 = document.querySelector(".image-comparison .slider-line6");
+ 
+const sliderButton6 = document.querySelector(".image-comparison .slider-button6");
+ 
+slider6.addEventListener("input", (e) => {
+  let sliderValue = e.target.value + "%";
+ 
+  contentImage6.style.width = sliderValue;
+  sliderLine6.style.left = sliderValue;
+ 
+  sliderButton6.style.left = sliderValue;
+});
+

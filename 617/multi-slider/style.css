@@ -27,6 +27,14 @@
     display: flex;
 }
  
+.image-comparison .images-container .image6 {
+  position: absolute;
+  top: 0;
+  width: 0%;
+  z-index: 18;
+}
+ 
+
 .image-comparison .images-container .image5 {
   position: absolute;
   top: 0;
@@ -63,9 +71,20 @@
     z-index: 11;
 }
 
+.image-comparison .slider6 {
+  position: absolute;
+  top: 85.68%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  width: 100%;
+  height: 5%;
+  opacity: 0%;
+  z-index: 18;
+}
 .image-comparison .slider5 {
   position: absolute;
-  top: 80%;
+  top: 71.40%;
   left: 50%;
   transform: translate(-50%, -50%);
   cursor: pointer;
@@ -76,7 +95,7 @@
 }
 .image-comparison .slider4 {
   position: absolute;
-  top: 64%;
+  top: 57.12%;
   left: 50%;
   transform: translate(-50%, -50%);
   cursor: pointer;
@@ -87,7 +106,7 @@
 }
 .image-comparison .slider3 {
   position: absolute;
-  top: 48%;
+  top: 42.84%;
   left: 50%;
   transform: translate(-50%, -50%);
   cursor: pointer;
@@ -98,7 +117,7 @@
 }
 .image-comparison .slider2 {
     position: absolute;
-    top: 32%;
+    top: 28.56%;
     left: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
@@ -110,7 +129,7 @@
  
 .image-comparison .slider1 {
     position: absolute;
-    top: 16%;
+    top: 14.28%;
     left: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
@@ -120,6 +139,16 @@
     z-index: 18;
 }
  
+
+.image-comparison .slider-line6 {
+  position: absolute;
+  height: 100%;
+  width: 4px;
+  background: #fff;
+  left: 0%;
+  transform: translateX(-50%);
+  z-index: 18;
+}
 .image-comparison .slider-line5 {
   position: absolute;
   height: 100%;
@@ -166,6 +195,23 @@
     z-index: 11;
 }
 
+
+.slider-button6 {
+  position: absolute;
+  background-color: #fff;
+  color: black;
+  padding: .5rem;
+  border-radius: 100vw;
+  display: grid;
+  place-items: center;
+  top: 85.68%;
+  left: 0%;
+  transform: translate(-50%, -50%);
+  /*pointer-events: none;
+  */
+  box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
+  z-index: 18;
+}
 .slider-button5 {
   position: absolute;
   background-color: #fff;
@@ -174,11 +220,11 @@
   border-radius: 100vw;
   display: grid;
   place-items: center;
-  top: 80%;
+  top: 71.40%;
   left: 0%;
   transform: translate(-50%, -50%);
   /*pointer-events: none;
-  /* z-index: 100; */
+   */
   box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
   z-index: 17;
 }
@@ -191,11 +237,11 @@
   border-radius: 100vw;
   display: grid;
   place-items: center;
-  top: 64%;
+  top: 57.12%;
   left: 0%;
   transform: translate(-50%, -50%);
   /*pointer-events: none;
-  /* z-index: 100; */
+  */
   box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
   z-index: 14;
 }
@@ -207,11 +253,11 @@
   border-radius: 100vw;
   display: grid;
   place-items: center;
-  top: 48%;
+  top: 42.84%;
   left: 0%;
   transform: translate(-50%, -50%);
   /*pointer-events: none;
-  /* z-index: 100; */
+   */
   box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
   z-index: 13;
 }
@@ -223,11 +269,11 @@
     border-radius: 100vw;
     display: grid;
     place-items: center;
-    top: 32%;
+    top: 28.56%;
     left: 0%;
     transform: translate(-50%, -50%);
     /*pointer-events: none;
-    /* z-index: 100; */
+     */
     box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
     z-index: 12;
   }
@@ -239,15 +285,24 @@
     border-radius: 100vw;
     display: grid;
     place-items: center;
-    top: 16%;
+    top: 14.28%;
     left: 0%;
     transform: translate(-50%, -50%);
     /*pointer-events: none;
-    /* z-index: 100; */
+    */
     box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
     z-index: 11;
   }
 
+  .slider-number6 {
+    position: absolute;
+   
+    left: 70%;
+    transform: translateX(-50%);
+    font-size: 20px; /* Adjust this value to change the size of the number */
+    color: #000; /* Adjust this value to change the color of the number */
+ 
+  }
   .slider-number5 {
     position: absolute;
    
