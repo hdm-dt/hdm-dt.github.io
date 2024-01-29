@@ -1,0 +1,45 @@
+const slider1 = document.querySelector(".image-comparison .slider2");
+const contentImage1 = document.querySelector(".image-comparison .image2");
+const sliderLine1 = document.querySelector(".image-comparison .slider-line2");
+ 
+const sliderButton1 = document.querySelector(".image-comparison .slider-button2");
+ 
+slider1.addEventListener("input", (e) => {
+  let sliderValue = e.target.value + "%";
+ 
+  contentImage1.style.width = sliderValue;
+  sliderLine1.style.left = sliderValue;
+ 
+  sliderButton1.style.left = sliderValue;
+});
+ 
+const slider2 = document.querySelector(".image-comparison .slider1");
+const contentImage2 = document.querySelector(".image-comparison .image1");
+const sliderLine2 = document.querySelector(".image-comparison .slider-line1");
+ 
+const sliderButton2 = document.querySelector(".image-comparison .slider-button1");
+ 
+slider2.addEventListener("input", (e) => {
+  let sliderValue = e.target.value + "%";
+ 
+  contentImage2.style.width = sliderValue;
+  sliderLine2.style.left = sliderValue;
+ 
+  sliderButton2.style.left = sliderValue;
+});
+ 
+const slider3 = document.querySelector(".image-comparison .slider3");
+const contentImage3 = document.querySelector(".image-comparison .image3");
+const sliderLine3 = document.querySelector(".image-comparison .slider-line3");
+ 
+const sliderButton3 = document.querySelector(".image-comparison .slider-button3");
+ 
+slider3.addEventListener("input", (e) => {
+  let sliderValue = e.target.value + "%";
+ 
+  contentImage3.style.width = sliderValue;
+  sliderLine3.style.left = sliderValue;
+ 
+  sliderButton3.style.left = sliderValue;
+});
+ 

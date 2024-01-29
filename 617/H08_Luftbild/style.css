@@ -1,0 +1,198 @@
+*,
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+ 
+ 
+.image-comparison {
+    display: grid;
+  place-items: center;
+  min-height: 100vh;
+  }
+ 
+.image-comparison img {
+    display: block;
+    max-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left;
+}
+ 
+ 
+.image-comparison .images-container {
+    position: relative;
+    display: flex;
+}
+ 
+
+
+
+.image-comparison .images-container .image3 {
+  position: absolute;
+  top: 0;
+  width: 0%;
+  z-index: 13;
+}
+ 
+.image-comparison .images-container .image2 {
+    position: absolute;
+    top: 0;
+    width: 0%;
+    z-index: 12;
+}
+ 
+.image-comparison .images-container .image1 {
+    position: absolute;
+    top: 0;
+    width: 0%;
+    z-index: 11;
+}
+
+
+.image-comparison .slider3 {
+  position: absolute;
+  top: 75%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  width: 100%;
+  height: 5%;
+  opacity: 0%;
+  z-index: 18;
+}
+.image-comparison .slider2 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    width: 100%;
+    height: 5%;
+    opacity: 0%;
+    z-index: 18;
+}
+ 
+.image-comparison .slider1 {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    width: 100%;
+    height: 5%;
+    opacity: 0%;
+    z-index: 18;
+}
+ 
+
+
+.image-comparison .slider-line3 {
+  position: absolute;
+  height: 100%;
+  width: 4px;
+  background: #fff;
+  left: 0%;
+  transform: translateX(-50%);
+  z-index: 13;
+}
+.image-comparison .slider-line2 {
+    position: absolute;
+    height: 100%;
+    width: 4px;
+    background: #fff;
+    left: 0%;
+    transform: translateX(-50%);
+    z-index: 12;
+}
+.image-comparison .slider-line1 {
+    position: absolute;
+    height: 100%;
+    width: 4px;
+    background: #fff;
+    left: 0%;
+    transform: translateX(-50%);
+    z-index: 11;
+}
+
+
+
+.slider-button3 {
+  position: absolute;
+  background-color: #fff;
+  color: black;
+  padding: .5rem;
+  border-radius: 100vw;
+  display: grid;
+  place-items: center;
+  top: 75%;
+  left: 0%;
+  transform: translate(-50%, -50%);
+  /*pointer-events: none;
+   */
+  box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
+  z-index: 13;
+}
+.slider-button2 {
+    position: absolute;
+    background-color: #fff;
+    color: black;
+    padding: .5rem;
+    border-radius: 100vw;
+    display: grid;
+    place-items: center;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    /*pointer-events: none;
+     */
+    box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
+    z-index: 12;
+  }
+  .slider-button1 {
+    position: absolute;
+    background-color: #fff;
+    color: black;
+    padding: .5rem;
+    border-radius: 100vw;
+    display: grid;
+    place-items: center;
+    top: 25%;
+    left: 0%;
+    transform: translate(-50%, -50%);
+    /*pointer-events: none;
+    */
+    box-shadow: 1px 1px 1px hsl(0, 50%, 2%, .5);
+    z-index: 11;
+  }
+
+
+  .slider-number3 {
+    position: absolute;
+   
+    left: 70%;
+    transform: translateX(-50%);
+    font-size: 20px; /* Adjust this value to change the size of the number */
+    color: #000; /* Adjust this value to change the color of the number */
+ 
+  }
+  .slider-number2 {
+    position: absolute;
+   
+    left: 70%;
+    transform: translateX(-50%);
+    font-size: 20px; /* Adjust this value to change the size of the number */
+    color: #000; /* Adjust this value to change the color of the number */
+ 
+  }
+  .slider-number1 {
+    position: absolute;
+   
+    left: 70%;
+    transform: translateX(-50%);
+    font-size: 20px; /* Adjust this value to change the size of the number */
+    color: #000; /* Adjust this value to change the color of the number */
+ 
+  }
