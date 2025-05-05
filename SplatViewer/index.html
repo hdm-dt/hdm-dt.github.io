@@ -49,14 +49,8 @@
       
 <a-entity id="right-hand"
           hand-tracking-controls="hand: right; handMeshVisible: true"
-          oculus-touch-controls="hand: right"
-          laser-controls="hand: right"
-          raycaster="objects: .grabbable; lineColor: #fff; lineOpacity: 0.7; far: 10"
-          grabber
           super-hands
           sphere-collider="objects: .grabbable">
-
-  <!-- Follows the actual index finger tip joint -->
   <a-entity xr-joint="jointName: index-finger-tip">
     <a-sphere radius="0.02" color="yellow" class="finger-tip" visible="true"></a-sphere>
   </a-entity>
@@ -66,14 +60,8 @@
 <!-- Left Hand -->
 <a-entity id="left-hand"
           hand-tracking-controls="hand: left; handMeshVisible: true"
-          oculus-touch-controls="hand: left"
-          laser-controls="hand: left"
-          raycaster="objects: .grabbable; lineColor: #fff; lineOpacity: 0.7; far: 10"
-          grabber
           super-hands
-          sphere-collider="objects: .grabbable"
-		  
-		   
+          sphere-collider="objects: .grabbable">
   <a-entity xr-joint="jointName: index-finger-tip">
     <a-sphere radius="0.02" color="yellow" class="finger-tip" visible="true"></a-sphere>
   </a-entity>
