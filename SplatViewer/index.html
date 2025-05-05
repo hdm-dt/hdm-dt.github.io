@@ -35,8 +35,8 @@
             
  >
 
-        <a-box grabbable rotation="0 -12.596 0" position="-0.351 0.301 -1.065" material="side: double; color: #EF2D5E; transparent: true; opacity: 0.0" scale="0.2 0.2 0.2" geometry="">
-            <a-entity grabbable gaussian_splatting="src: Tate_0.2x.splat;"
+        <a-box class="grabbable" grabbable rotation="0 -12.596 0" position="-0.351 0.301 -1.065" material="side: double; color: #EF2D5E; transparent: true; opacity: 0.0" scale="0.2 0.2 0.2" geometry="">
+            <a-entity class="grabbable" grabbable gaussian_splatting="src: Tate_0.2x.splat;"
                       position="0.157 -0.491 -0.027"
                       rotation="0 12.596 0"
                       scale="0.3 0.3 0.3">
@@ -44,9 +44,9 @@
         </a-box>
        
       
-        <a-entity id="right-hand" hand-tracking-grab-controls="hand: right;" laser-controls="hand: right" oculus-touch-controls="hand: right" raycaster="lineColor: #fff; lineOpacity: 0.7; far: 10" grabber="" daydream-controls="" gearvr-controls="" hp-mixed-reality-controls="" magicleap-controls="" oculus-go-controls="" valve-index-controls="" vive-controls="" vive-focus-controls="" windows-motion-controls="" generic-tracked-controller-controls="">
+        <a-entity id="right-hand" hand-tracking-grab-controls="hand: right;" laser-controls="hand: right" oculus-touch-controls="hand: right" raycaster="objects: .grabbable; lineColor: #fff; lineOpacity: 0.7; far: 10" grabber="" daydream-controls="" gearvr-controls="" hp-mixed-reality-controls="" magicleap-controls="" oculus-go-controls="" valve-index-controls="" vive-controls="" vive-focus-controls="" windows-motion-controls="" generic-tracked-controller-controls="">
         </a-entity>
-        <a-entity id="left-hand" hand-tracking-grab-controls="hand: left;" laser-controls="hand: left" oculus-touch-controls="hand: left" raycaster="lineColor: #fff; lineOpacity: 0.7; far: 10" grabber="" daydream-controls="" gearvr-controls="" hp-mixed-reality-controls="" magicleap-controls="" oculus-go-controls="" valve-index-controls="" vive-controls="" vive-focus-controls="" windows-motion-controls="" generic-tracked-controller-controls="">
+        <a-entity id="left-hand" hand-tracking-grab-controls="hand: left;" laser-controls="hand: left" oculus-touch-controls="hand: left" raycaster="objects: .grabbable; lineColor: #fff; lineOpacity: 0.7; far: 10" grabber="" daydream-controls="" gearvr-controls="" hp-mixed-reality-controls="" magicleap-controls="" oculus-go-controls="" valve-index-controls="" vive-controls="" vive-focus-controls="" windows-motion-controls="" generic-tracked-controller-controls="">
         </a-entity>
 
 
