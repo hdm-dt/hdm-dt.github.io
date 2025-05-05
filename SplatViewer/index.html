@@ -55,13 +55,13 @@
           grabber
           super-hands
           sphere-collider="objects: .grabbable">
-  
-  <!-- Small collider sphere for pinch detection -->
-  <a-sphere radius="0.02" color="yellow"
-            position="0 0 -0.05"
-            class="finger-tip"
-            visible="true"></a-sphere>
+
+  <!-- Follows the actual index finger tip joint -->
+  <a-entity xr-joint="jointName: index-finger-tip">
+    <a-sphere radius="0.02" color="yellow" class="finger-tip" visible="true"></a-sphere>
+  </a-entity>
 </a-entity>
+
 
 <!-- Left Hand -->
 <a-entity id="left-hand"
@@ -71,8 +71,12 @@
           raycaster="objects: .grabbable; lineColor: #fff; lineOpacity: 0.7; far: 10"
           grabber
           super-hands
-          sphere-collider="objects: .grabbable">
-		  	   <a-sphere radius="0.02" color="yellow"></a-sphere>
+          sphere-collider="objects: .grabbable
+		  
+		   
+  <a-entity xr-joint="jointName: index-finger-tip">
+    <a-sphere radius="0.02" color="yellow" class="finger-tip" visible="true"></a-sphere>
+  </a-entity>
 </a-entity>
 
 
