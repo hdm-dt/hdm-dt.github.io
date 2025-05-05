@@ -24,6 +24,8 @@
             }
         });
     </script>
+	<script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@4.0.1/dist/aframe-physics-system.min.js"></script>
+
 
 </head>
 <body>
@@ -44,11 +46,27 @@
         </a-box>
        
       
-        <a-entity id="right-hand" hand-tracking-grab-controls="hand: right;" laser-controls="hand: right" oculus-touch-controls="hand: right" raycaster="objects: .grabbable; lineColor: #fff; lineOpacity: 0.7; far: 10" grabber="" daydream-controls="" gearvr-controls="" hp-mixed-reality-controls="" magicleap-controls="" oculus-go-controls="" valve-index-controls="" vive-controls="" vive-focus-controls="" windows-motion-controls="" generic-tracked-controller-controls="">
-        </a-entity>
-        <a-entity id="left-hand" hand-tracking-grab-controls="hand: left;" laser-controls="hand: left" oculus-touch-controls="hand: left" raycaster="objects: .grabbable; lineColor: #fff; lineOpacity: 0.7; far: 10" grabber="" daydream-controls="" gearvr-controls="" hp-mixed-reality-controls="" magicleap-controls="" oculus-go-controls="" valve-index-controls="" vive-controls="" vive-focus-controls="" windows-motion-controls="" generic-tracked-controller-controls="">
-        </a-entity>
+<!-- Right Hand -->
+<a-entity id="right-hand"
+          hand-tracking-controls="hand: right"
+          oculus-touch-controls="hand: right"
+          laser-controls="hand: right"
+          raycaster="objects: .grabbable; lineColor: #fff; lineOpacity: 0.7; far: 10"
+          grabber
+          super-hands
+          sphere-collider="objects: .grabbable">
+</a-entity>
 
+<!-- Left Hand -->
+<a-entity id="left-hand"
+          hand-tracking-controls="hand: left"
+          oculus-touch-controls="hand: left"
+          laser-controls="hand: left"
+          raycaster="objects: .grabbable; lineColor: #fff; lineOpacity: 0.7; far: 10"
+          grabber
+          super-hands
+          sphere-collider="objects: .grabbable">
+</a-entity>
 
 
     </a-scene>
