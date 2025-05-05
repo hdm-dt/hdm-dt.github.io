@@ -47,7 +47,6 @@
        
 
       
-<!-- Right Hand -->
 <a-entity id="right-hand"
           hand-tracking-controls="hand: right"
           oculus-touch-controls="hand: right"
@@ -56,7 +55,12 @@
           grabber
           super-hands
           sphere-collider="objects: .grabbable">
-		  	   <a-sphere radius="0.02" color="yellow"></a-sphere>
+  
+  <!-- Small collider sphere for pinch detection -->
+  <a-sphere radius="0.02" color="yellow"
+            position="0 0 -0.05"
+            class="finger-tip"
+            visible="true"></a-sphere>
 </a-entity>
 
 <!-- Left Hand -->
