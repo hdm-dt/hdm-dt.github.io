@@ -4,6 +4,8 @@
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="index.js"></script>
     <script src="https://unpkg.com/super-hands@^3.0.5/dist/super-hands.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
+
     <script>
         AFRAME.registerComponent('pinch-grabbable', {
             schema: {
@@ -91,7 +93,7 @@
 
     <a-scene renderer="antialias: true"
              xr-mode-ui="enabled: true"
-             webxr="optionalFeatures: hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;">
+             webxr="optionalFeatures: hand-tracking, hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;">
         <a-box position="-0.351 0.301 -1.065"
                scale="0.2 0.2 0.2"
                material="side: double; color: #EF2D5E; transparent: true; opacity: 0.5"
