@@ -3,8 +3,6 @@
 <head>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="index.js"></script>
-   
-    
     <script src="https://unpkg.com/super-hands@^3.0.5/dist/super-hands.min.js"></script>
 
 
@@ -19,7 +17,7 @@
             
  >
 
-        <a-box class="grabbable" grabbable rotation="0 -12.596 0" position="-0.351 0.301 -1.065" material="side: double; color: #EF2D5E; transparent: true; opacity: 0.0" scale="0.2 0.2 0.2" geometry="">
+        <a-box class="grabbable" grabbable rotation="0 -12.596 0" position="-0.351 0.301 -1.065" material="side: double; color: #EF2D5E; transparent: true; opacity: 0.5" scale="0.2 0.2 0.2" geometry="">
             <a-entity gaussian_splatting="src: Tate_0.2x.splat;"
                       position="0.157 -0.491 -0.027"
                       rotation="0 12.596 0"
@@ -29,18 +27,14 @@
        
 
       
-<a-entity super-hands id="right-hand"
-          hand-tracking-grab-controls="hand: right; color:#ffcccc; hoverEnabled: true;"
-          >
- 
+<a-entity sphere-collider="objects: .grabbable; radius: 0.2;" super-hands id="right-hand"
+          hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc">
 </a-entity>
 
 
 <!-- Left Hand -->
-<a-entity super-hands id="left-hand"
-          hand-tracking-grab-controls="hand: left; color:#ffcccc; hoverEnabled: true;"
-          >
-
+<a-entity sphere-collider="objects: .grabbable; radius: 0.2;" super-hands id="left-hand"
+          hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc">
 </a-entity>
 
 
