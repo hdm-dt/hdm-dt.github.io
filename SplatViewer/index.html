@@ -2,117 +2,133 @@
 <html>
 <head>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="index.js"></script>
     <script src="https://unpkg.com/super-hands@^3.0.5/dist/super-hands.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
-
     <script>
-        AFRAME.registerComponent('pinch-grabbable', {
-            schema: {
-                distance: { type: 'number', default: 0.02 }, // pinch detection
-                grabRadius: { type: 'number', default: 0.1 } // proximity to box to allow grab
-            },
-
+        // Debug component to visualize finger positions
+        AFRAME.registerComponent('finger-debug', {
             init: function () {
-                this.grabbingHand = null;
-                this.refSpace = null;
-                this.frame = null;
+                // Create debug spheres for index fingertips
+                this.indexTip = document.createElement('a-sphere');
+                this.indexTip.setAttribute('radius', '0.01');
+                this.indexTip.setAttribute('color', '#00ff00');
+                this.el.appendChild(this.indexTip);
+
+                // Set up event listeners for tracking updates
+                this.el.addEventListener('tracked', (evt) => {
+                    if (evt.detail.visible) {
+                        this.indexTip.setAttribute('visible', true);
+                    } else {
+                        this.indexTip.setAttribute('visible', false);
+                    }
+                });
             },
 
             tick: function () {
-                const sceneEl = this.el.sceneEl;
-                const renderer = sceneEl.renderer;
-                const xr = renderer.xr;
-
-                if (!xr || !xr.isPresenting) return;
-                if (!this.refSpace) this.refSpace = xr.getReferenceSpace();
-                if (!this.frame) this.frame = sceneEl.frame;
-                if (!this.refSpace || !this.frame) return;
-
-                const session = xr.getSession();
-                const inputSources = session.inputSources;
-
-                for (const inputSource of inputSources) {
-                    if (!inputSource.hand) continue;
-
-                    const handedness = inputSource.handedness;
-                    const thumbTip = inputSource.hand.get('thumb-tip');
-                    const indexTip = inputSource.hand.get('index-finger-tip');
-
-                    if (!thumbTip || !indexTip) continue;
-
-                    const thumbPose = this.frame.getJointPose(thumbTip, this.refSpace);
-                    const indexPose = this.frame.getJointPose(indexTip, this.refSpace);
-
-                    if (!thumbPose || !indexPose) continue;
-
-                    const pinchDistance = this._distance(thumbPose.transform.position, indexPose.transform.position);
-                    const boxPos = this.el.object3D.position;
-
-                    const midPinch = {
-                        x: (thumbPose.transform.position.x + indexPose.transform.position.x) / 2,
-                        y: (thumbPose.transform.position.y + indexPose.transform.position.y) / 2,
-                        z: (thumbPose.transform.position.z + indexPose.transform.position.z) / 2
-                    };
-
-                    const handPos = new THREE.Vector3(midPinch.x, midPinch.y, midPinch.z);
-                    const distanceToBox = handPos.distanceTo(boxPos);
-
-                    // If pinching and close to the box, grab it
-                    if (pinchDistance < this.data.distance && distanceToBox < this.data.grabRadius) {
-                        if (!this.grabbingHand) {
-                            this.el.object3D.position.copy(handPos);
-                            this.grabbingHand = handedness;
-                        } else if (this.grabbingHand === handedness) {
-                            this.el.object3D.position.copy(handPos);
-                        }
-                    } else {
-                        if (this.grabbingHand === handedness) {
-                            this.grabbingHand = null;
-                        }
-                    }
+                if (this.el.components['hand-tracking-controls'] &&
+                    this.el.components['hand-tracking-controls'].indexTipPosition) {
+                    const tipPos = this.el.components['hand-tracking-controls'].indexTipPosition;
+                    this.indexTip.setAttribute('position', tipPos);
                 }
-            },
+            }
+        });
 
-            _distance: function (a, b) {
-                return Math.sqrt(
-                    (a.x - b.x) ** 2 +
-                    (a.y - b.y) ** 2 +
-                    (a.z - b.z) ** 2
-                );
+        // Log when hands are detected
+        AFRAME.registerComponent('hand-tracking-logger', {
+            init: function () {
+                console.log(`Hand tracking component initialized for ${this.el.getAttribute('hand-tracking-controls').hand} hand`);
+
+                this.el.addEventListener('hand-tracking-detected', () => {
+                    console.log(`Hand tracking detected for ${this.el.getAttribute('hand-tracking-controls').hand} hand`);
+                });
+
+                this.el.addEventListener('hand-tracking-lost', () => {
+                    console.log(`Hand tracking lost for ${this.el.getAttribute('hand-tracking-controls').hand} hand`);
+                });
             }
         });
     </script>
-
-
-
-
 </head>
 <body>
     <div id="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
-
     <a-scene renderer="antialias: true"
              xr-mode-ui="enabled: true"
-             webxr="optionalFeatures: hand-tracking, hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;">
+             webxr="optionalFeatures: hand-tracking, hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;"
+             debug>
+
+        <!-- Box with splat as child -->
         <a-box position="-0.351 0.301 -1.065"
                scale="0.2 0.2 0.2"
-               material="side: double; color: #EF2D5E; transparent: true; opacity: 0.5"
-               pinch-grabbable>
-
+               material="side: double; color: #EF2D5E; transparent: true; opacity: 0.7"
+               class="grabbable"
+               grabbable
+               hoverable
+               draggable>
             <a-entity gaussian_splatting="src: Tate_0.2x.splat;"
                       position="0.157 -0.491 -0.027"
                       rotation="0 12.596 0"
                       scale="0.3 0.3 0.3">
             </a-entity>
-
         </a-box>
 
+        <!-- Debug text to show hand tracking status -->
+        <a-text value="Hand tracking status will appear here"
+                position="0 1.6 -1"
+                scale="0.5 0.5 0.5"
+                align="center"
+                id="debug-text"></a-text>
 
-        <a-entity hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
-        <a-entity hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
+        <!-- Hand controllers with debug visuals -->
+        <a-entity hand-tracking-controls="hand: left; modelColor: #ffcccc;"
+                  super-hands="colliderEvent: collidestart;
+                              colliderEndEvent: collideend;
+                              grabStartButtons: gripdown, pinchstart;
+                              grabEndButtons: gripup, pinchend"
+                  finger-debug
+                  hand-tracking-logger>
+        </a-entity>
 
+        <a-entity hand-tracking-controls="hand: right; modelColor: #ffcccc;"
+                  super-hands="colliderEvent: collidestart;
+                              colliderEndEvent: collideend;
+                              grabStartButtons: gripdown, pinchstart;
+                              grabEndButtons: gripup, pinchend"
+                  finger-debug
+                  hand-tracking-logger>
+        </a-entity>
 
+        <!-- Fallback controller entities in case hand tracking fails -->
+        <a-entity oculus-touch-controls="hand: left" visible="false"></a-entity>
+        <a-entity oculus-touch-controls="hand: right" visible="false"></a-entity>
 
+        <!-- Simple environment for reference -->
+        <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
     </a-scene>
+
+    <script>
+        // Additional runtime debugging
+        window.addEventListener('load', () => {
+            const scene = document.querySelector('a-scene');
+            const debugText = document.getElementById('debug-text');
+
+            // Update debug text with hand tracking status
+            scene.addEventListener('enter-vr', () => {
+                debugText.setAttribute('value', 'Entered VR - Checking hand tracking...');
+
+                // Check if hand tracking is available
+                if (navigator.xr) {
+                    navigator.xr.isSessionSupported('immersive-ar').then(supported => {
+                        if (supported) {
+                            debugText.setAttribute('value', 'Hand tracking should be available');
+                        } else {
+                            debugText.setAttribute('value', 'AR not supported on this device');
+                        }
+                    });
+                } else {
+                    debugText.setAttribute('value', 'WebXR not available');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
