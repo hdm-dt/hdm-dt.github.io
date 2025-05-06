@@ -3,27 +3,9 @@
 <head>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="index.js"></script>
-    <script>
-        AFRAME.registerComponent('grabber', {
-            init: function () {
-                this.grabbed = null;
-            },
-            events: {
-                gripdown: function (evt) {
-                    if (evt.currentTarget.components['raycaster'].intersections.length > 0) {
-                        this.grabbed = evt.currentTarget.components['raycaster'].intersections[0].object.el;
-                        evt.currentTarget.object3D.attach(this.grabbed.object3D);
-                    }
-                },
-                gripup: function (evt) {
-                    if (this.grabbed) {
-                        this.el.sceneEl.object3D.attach(this.grabbed.object3D);
-                        this.grabbed = null;
-                    }
-                }
-            }
-        });
-    </script>
+   
+    
+    <script src="https://unpkg.com/super-hands@^3.0.5/dist/super-hands.min.js"></script>
 
 
 
@@ -47,26 +29,18 @@
        
 
       
-<a-entity id="right-hand"
-          hand-tracking-controls="hand: right; handMeshVisible: true"
-          super-hands
-          sphere-collider="objects: .grabbable">
-  <!-- Attach to index finger tip -->
-  <a-entity xr-joint="jointName: index-finger-tip">
-    <a-sphere radius="0.02" color="yellow" visible="true"></a-sphere>
-  </a-entity>
+<a-entity super-hands id="right-hand"
+          hand-tracking-grab-controls="hand: right; color:#ffcccc; hoverEnabled: true;"
+          >
+ 
 </a-entity>
 
 
 <!-- Left Hand -->
-<a-entity id="left-hand"
-          hand-tracking-controls="hand: left; handMeshVisible: true"
-          super-hands
-          sphere-collider="objects: .grabbable">
-  <!-- Attach to index finger tip -->
-  <a-entity xr-joint="jointName: index-finger-tip">
-    <a-sphere radius="0.02" color="yellow" visible="true"></a-sphere>
-  </a-entity>
+<a-entity super-hands id="left-hand"
+          hand-tracking-grab-controls="hand: left; color:#ffcccc; hoverEnabled: true;"
+          >
+
 </a-entity>
 
 
