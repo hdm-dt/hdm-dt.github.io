@@ -1,181 +1,116 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-    <title>Hand Input Module in A-Frame</title>
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
-</head>
-
-<body>
-    <a-scene xr-mode-ui="enabled: true; enterAREnabled: true; XRMode: ar;" webxr="optionalFeatures: hand-tracking">
-        <a-box id="box" width="0.2" height="0.2" depth="0.2" position="0 1.2 -0.4" color="green"></a-box>
-        <a-entity hand-skeleton></a-entity>
-    </a-scene>
-
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="index.js"></script>
+    <script src="https://unpkg.com/super-hands@^3.0.5/dist/super-hands.min.js"></script>
     <script>
-        const orderedJoints = [
-            ["thumb-metacarpal", "thumb-phalanx-proximal", "thumb-phalanx-distal", "thumb-tip"],
-            ["index-finger-metacarpal", "index-finger-phalanx-proximal", "index-finger-phalanx-intermediate", "index-finger-phalanx-distal", "index-finger-tip"],
-            ["middle-finger-metacarpal", "middle-finger-phalanx-proximal", "middle-finger-phalanx-intermediate", "middle-finger-phalanx-distal", "middle-finger-tip"],
-            ["ring-finger-metacarpal", "ring-finger-phalanx-proximal", "ring-finger-phalanx-intermediate", "ring-finger-phalanx-distal", "ring-finger-tip"],
-            ["pinky-finger-metacarpal", "pinky-finger-phalanx-proximal", "pinky-finger-phalanx-intermediate", "pinky-finger-phalanx-distal", "pinky-finger-tip"]
-        ];
+        AFRAME.registerComponent('pinch-grabbable', {
+            schema: {
+                distance: { type: 'number', default: 0.02 }, // pinch detection
+                grabRadius: { type: 'number', default: 0.1 } // proximity to box to allow grab
+            },
 
-        const minimumDistance = 0.1;
-        const pinchDistance = 0.01;
-
-        function calculateDistance(point1, point2) {
-            return Math.sqrt((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2 + (point1.z - point2.z) ** 2);
-        }
-
-        function updateBoxColour(box, rightHandClose, leftHandClose) {
-            if (rightHandClose) {
-                box.setAttribute('color', 'red');
-            } else if (leftHandClose) {
-                box.setAttribute('color', 'blue');
-            } else {
-                box.setAttribute('color', 'green');
-            }
-        }
-
-        function updateBoxAppearance(box, isRightPinching, isLeftPinching) {
-            if (isRightPinching) {
-                box.setAttribute('geometry', { primitive: 'torusKnot', radius: 0.1, radiusTubular: 0.02 });
-            } else if (isLeftPinching) {
-                box.setAttribute('geometry', { primitive: 'dodecahedron', radius: 0.15 }); // Changed from octahedron to tetrahedron
-            } else {
-                box.setAttribute('geometry', { primitive: 'box', width: 0.2, height: 0.2, depth: 0.2 });
-            }
-        }
-
-        AFRAME.registerComponent('hand-skeleton', {
             init: function () {
-                this.referenceSpace = null;
+                this.grabbingHand = null;
+                this.refSpace = null;
                 this.frame = null;
-                this.spheres = {};
-                this.box = document.getElementById('box');
-                this.rightHandClose = false;
-                this.leftHandClose = false;
-
             },
 
             tick: function () {
-                if (!this.frame) {
-                    this.frame = this.el.sceneEl.frame;
-                    this.referenceSpace = this.el.sceneEl.renderer.xr.getReferenceSpace();
-                } else {
-                    this.renderHandSkeleton();
-                    this.checkInteraction();
-                    this.detectGesture();
-                }
-            },
+                const sceneEl = this.el.sceneEl;
+                const renderer = sceneEl.renderer;
+                const xr = renderer.xr;
 
-            renderHandSkeleton: function () {
-                const session = this.el.sceneEl.renderer.xr.getSession();
-                const inputSources = session.inputSources;
-                if (!this.frame || !this.referenceSpace) {
-                    return;
-                }
-                for (const inputSource of inputSources) {
-                    if (inputSource.hand) {
-                        const hand = inputSource.hand;
-                        const handedness = inputSource.handedness;
-                        for (const finger of orderedJoints) {
-                            for (const jointName of finger) {
-                                const joint = hand.get(jointName);
-                                if (joint) {
-                                    const jointPose = this.frame.getJointPose(joint, this.referenceSpace);
-                                    if (jointPose != null) {
-                                        const position = jointPose.transform.position;
-                                        if (!this.spheres[handedness + '_' + jointName]) {
-                                            this.spheres[handedness + '_' + jointName] = this.drawSphere(jointPose.radius, position);
-                                        } else {
-                                            this.spheres[handedness + '_' + jointName].object3D.position.set(position.x, position.y, position.z);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
+                if (!xr || !xr.isPresenting) return;
+                if (!this.refSpace) this.refSpace = xr.getReferenceSpace();
+                if (!this.frame) this.frame = sceneEl.frame;
+                if (!this.refSpace || !this.frame) return;
 
-            checkInteraction: function () {
-                let rightHandClose = false;
-                let leftHandClose = false;
-
-                for (const jointName in this.spheres) {
-                    const jointSphere = this.spheres[jointName];
-                    const jointPosition = jointSphere.object3D.position;
-                    const distance = calculateDistance(jointPosition, this.box.object3D.position);
-
-                    if (distance < minimumDistance) {
-                        if (jointName.startsWith('right')) {
-                            rightHandClose = true;
-                        }
-                        if (jointName.startsWith('left')) {
-                            leftHandClose = true;
-                        }
-                    }
-                }
-
-                if (rightHandClose !== this.rightHandClose || leftHandClose !== this.leftHandClose) {
-                    updateBoxColour(this.box, rightHandClose, leftHandClose);
-                }
-
-                this.rightHandClose = rightHandClose;
-                this.leftHandClose = leftHandClose;
-            },
-
-            detectGesture: function () {
-                const session = this.el.sceneEl.renderer.xr.getSession();
+                const session = xr.getSession();
                 const inputSources = session.inputSources;
 
-                let isRightPinching = false;
-                let isLeftPinching = false;
-
                 for (const inputSource of inputSources) {
-                    if (inputSource.hand) {
-                        const thumbTip = this.frame.getJointPose(inputSource.hand.get("thumb-tip"), this.referenceSpace);
-                        const indexTip = this.frame.getJointPose(inputSource.hand.get("index-finger-tip"), this.referenceSpace);
+                    if (!inputSource.hand) continue;
 
-                        if (thumbTip && indexTip) {
-                            const distance = calculateDistance(thumbTip.transform.position, indexTip.transform.position);
-                            if (distance < pinchDistance) {
-                                if (inputSource.handedness === 'right') {
-                                    isRightPinching = true;
-                                } else if (inputSource.handedness === 'left') {
-                                    isLeftPinching = true;
-                                }
-                            }
+                    const handedness = inputSource.handedness;
+                    const thumbTip = inputSource.hand.get('thumb-tip');
+                    const indexTip = inputSource.hand.get('index-finger-tip');
+
+                    if (!thumbTip || !indexTip) continue;
+
+                    const thumbPose = this.frame.getJointPose(thumbTip, this.refSpace);
+                    const indexPose = this.frame.getJointPose(indexTip, this.refSpace);
+
+                    if (!thumbPose || !indexPose) continue;
+
+                    const pinchDistance = this._distance(thumbPose.transform.position, indexPose.transform.position);
+                    const boxPos = this.el.object3D.position;
+
+                    const midPinch = {
+                        x: (thumbPose.transform.position.x + indexPose.transform.position.x) / 2,
+                        y: (thumbPose.transform.position.y + indexPose.transform.position.y) / 2,
+                        z: (thumbPose.transform.position.z + indexPose.transform.position.z) / 2
+                    };
+
+                    const handPos = new THREE.Vector3(midPinch.x, midPinch.y, midPinch.z);
+                    const distanceToBox = handPos.distanceTo(boxPos);
+
+                    // If pinching and close to the box, grab it
+                    if (pinchDistance < this.data.distance && distanceToBox < this.data.grabRadius) {
+                        if (!this.grabbingHand) {
+                            this.el.object3D.position.copy(handPos);
+                            this.grabbingHand = handedness;
+                        } else if (this.grabbingHand === handedness) {
+                            this.el.object3D.position.copy(handPos);
+                        }
+                    } else {
+                        if (this.grabbingHand === handedness) {
+                            this.grabbingHand = null;
                         }
                     }
                 }
-
-                this.rightPinchDetected = isRightPinching;
-                this.leftPinchDetected = isLeftPinching;
-
-                updateBoxAppearance(this.box, isRightPinching, isLeftPinching);
             },
 
-            drawSphere: function (radius, position) {
-                const sphere = document.createElement('a-sphere');
-                sphere.setAttribute('radius', radius);
-                sphere.setAttribute('color', '#4d5cc1');
-                sphere.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
-                this.el.appendChild(sphere);
-                return sphere;
-            },
-
-            remove: function () {
-                for (const jointName in this.spheres) {
-                    this.spheres[jointName].parentNode.removeChild(this.spheres[jointName]);
-                }
-            },
+            _distance: function (a, b) {
+                return Math.sqrt(
+                    (a.x - b.x) ** 2 +
+                    (a.y - b.y) ** 2 +
+                    (a.z - b.z) ** 2
+                );
+            }
         });
     </script>
 
-</body>
 
+
+
+</head>
+<body>
+    <div id="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
+
+    <a-scene renderer="antialias: true"
+             xr-mode-ui="enabled: true"
+             webxr="optionalFeatures: hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;">
+        <a-box position="-0.351 0.301 -1.065"
+               scale="0.2 0.2 0.2"
+               material="side: double; color: #EF2D5E; transparent: true; opacity: 0.5"
+               pinch-grabbable>
+
+            <a-entity gaussian_splatting="src: Tate_0.2x.splat;"
+                      position="0.157 -0.491 -0.027"
+                      rotation="0 12.596 0"
+                      scale="0.3 0.3 0.3">
+            </a-entity>
+
+        </a-box>
+
+
+        <a-entity hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
+        <a-entity hand-controls="hand: left; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
+
+
+
+    </a-scene>
+</body>
 </html>
