@@ -164,8 +164,7 @@
                                     (thumbPose.transform.position.z + indexPose.transform.position.z) / 2
                                 );
 
-                                // Update debug text with distance
-                                this.debugText.setAttribute('value', `Pinch distance: ${distance.toFixed(3)}`);
+                             
 
                                 // Check for pinch gesture
                                 if (distance < pinchDistance) {
@@ -200,14 +199,13 @@
 
                 if (anyPinchDetected) {
                     const distanceToBox = pinchPosition.distanceTo(boxPosition);
-                    this.debugText.setAttribute('value', `Pinching! Distance to box: ${distanceToBox.toFixed(3)}`);
+                   
 
                     if (!this.isGrabbing && distanceToBox < grabDistance) {
                         // Start grab
                         this.isGrabbing = true;
                         this.grabOffset.copy(boxPosition).sub(pinchPosition);
-                        this.debugText.setAttribute('value', 'GRABBED!');
-                        this.debugText.setAttribute('color', 'green');
+                    
 
                         // Change box color when grabbed
                         this.splatContainer.setAttribute('color', '#00FF00');
@@ -222,8 +220,7 @@
                     // Release grab
                     if (this.isGrabbing) {
                         this.isGrabbing = false;
-                        this.debugText.setAttribute('value', 'Released');
-                        this.debugText.setAttribute('color', 'white');
+                    
 
                         // Reset box color
                         this.splatContainer.setAttribute('color', '#EF2D5E');
