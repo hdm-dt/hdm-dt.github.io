@@ -14,6 +14,7 @@
              xr-mode-ui="enabled: true; XRMode: xr;"
              webxr="optionalFeatures: hand-tracking, hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;">
 
+
         <!-- Box with splat as child -->
         <a-box id="splat-container"
                position="-0.351 0.301 -1.065"
@@ -25,23 +26,19 @@
                       scale="0.3 0.3 0.3">
             </a-entity>
         </a-box>
-        <a-box id="splat-container"
-               position="-0.351 0.301 -1.065"
-               scale="0.2 0.2 0.2"
-               material="side: double; color: #EF2D5E; transparent: true; opacity: 1;">
-        </a-box>
-            <!-- Hand tracking component -->
-            <a-entity hand-tracker></a-entity>
 
-            <!-- Instructions -->
-            <a-text value="Pinch your fingers near the box to grab it"
-                    position="0 1.6 -1"
-                    scale="0.5 0.5 0.5"
-                    align="center">
-            </a-text>
+        <!-- Hand tracking component -->
+        <a-entity hand-tracker></a-entity>
 
-            <!-- Simple environment for reference -->
-            <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
+        <!-- Instructions -->
+        <a-text value="Pinch your fingers near the box to grab it"
+                position="0 1.6 -1"
+                scale="0.5 0.5 0.5"
+                align="center">
+        </a-text>
+
+        <!-- Simple environment for reference -->
+        <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
     </a-scene>
 
     <script>
