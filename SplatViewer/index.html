@@ -2,19 +2,20 @@
 <html>
 <head>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="index.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
 </head>
 <body>
     <div id="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
     <a-scene renderer="antialias: true"
-             xr-mode-ui="enabled: true"
+             xr-mode-ui="enabled: true;"
              webxr="optionalFeatures: hand-tracking, hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;">
 
-        <!-- Box with splat as child -->
+        <!-- Box with splat as child - using your original entity -->
         <a-box id="splat-container"
                position="-0.351 0.301 -1.065"
                scale="0.2 0.2 0.2"
-               material="side: double; color: #EF2D5E; transparent: true; opacity: 0.7">
+               material="side: double; color: #EF2D5E; transparent: true; opacity: 0.5">
             <a-entity gaussian_splatting="src: Tate_0.2x.splat;"
                       position="0.157 -0.491 -0.027"
                       rotation="0 12.596 0"
@@ -87,6 +88,7 @@
 
                 if (!this.referenceSpace && this.el.sceneEl.renderer.xr.isPresenting) {
                     this.referenceSpace = this.el.sceneEl.renderer.xr.getReferenceSpace();
+                    this.debugText.setAttribute('value', 'XR Session Active - Waiting for hands...');
                 }
 
                 if (this.frame && this.referenceSpace) {
@@ -211,7 +213,7 @@
                         this.debugText.setAttribute('color', 'green');
 
                         // Change box color when grabbed
-                        this.splatContainer.setAttribute('color', '#00FF00');
+                        this.splatContainer.setAttribute('material', 'color', '#00FF00');
                     }
 
                     if (this.isGrabbing) {
@@ -227,7 +229,7 @@
                         this.debugText.setAttribute('color', 'white');
 
                         // Reset box color
-                        this.splatContainer.setAttribute('color', '#EF2D5E');
+                        this.splatContainer.setAttribute('material', 'color', '#EF2D5E');
                     }
                 }
             },
