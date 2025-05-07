@@ -14,37 +14,109 @@
                 this.indexTip.setAttribute('color', '#00ff00');
                 this.el.appendChild(this.indexTip);
 
-                // Set up event listeners for tracking updates
-                this.el.addEventListener('tracked', (evt) => {
-                    if (evt.detail.visible) {
-                        this.indexTip.setAttribute('visible', true);
-                    } else {
-                        this.indexTip.setAttribute('visible', false);
-                    }
-                });
+                // Create debug sphere for thumb tip
+                this.thumbTip = document.createElement('a-sphere');
+                this.thumbTip.setAttribute('radius', '0.01');
+                this.thumbTip.setAttribute('color', '#0000ff');
+                this.el.appendChild(this.thumbTip);
             },
 
             tick: function () {
-                if (this.el.components['hand-tracking-controls'] &&
-                    this.el.components['hand-tracking-controls'].indexTipPosition) {
-                    const tipPos = this.el.components['hand-tracking-controls'].indexTipPosition;
-                    this.indexTip.setAttribute('position', tipPos);
+                if (this.el.components['hand-tracking-controls']) {
+                    if (this.el.components['hand-tracking-controls'].indexTipPosition) {
+                        const tipPos = this.el.components['hand-tracking-controls'].indexTipPosition;
+                        this.indexTip.setAttribute('position', tipPos);
+                    }
+
+                    if (this.el.components['hand-tracking-controls'].getJointPose) {
+                        const thumbPos = this.el.components['hand-tracking-controls'].getJointPose('thumb-tip');
+                        if (thumbPos) {
+                            this.thumbTip.setAttribute('position', thumbPos);
+                        }
+                    }
                 }
             }
         });
 
-        // Log when hands are detected
-        AFRAME.registerComponent('hand-tracking-logger', {
+        // Custom pinch-grabber component
+        AFRAME.registerComponent('pinch-grabber', {
+            schema: {
+                pinchDistance: { default: 0.05 },
+                grabDistance: { default: 0.2 }
+            },
+
             init: function () {
-                console.log(`Hand tracking component initialized for ${this.el.getAttribute('hand-tracking-controls').hand} hand`);
+                this.grabbed = null;
+                this.pinching = false;
+                this.lastPosition = new THREE.Vector3();
 
-                this.el.addEventListener('hand-tracking-detected', () => {
-                    console.log(`Hand tracking detected for ${this.el.getAttribute('hand-tracking-controls').hand} hand`);
+                // Debug text for pinch state
+                this.debugText = document.createElement('a-text');
+                this.debugText.setAttribute('value', 'Not pinching');
+                this.debugText.setAttribute('position', '0 0.1 0');
+                this.debugText.setAttribute('scale', '0.1 0.1 0.1');
+                this.debugText.setAttribute('align', 'center');
+                this.el.appendChild(this.debugText);
+
+                // Listen for pinch events from hand-tracking-controls
+                this.el.addEventListener('pinchstarted', this.onPinchStart.bind(this));
+                this.el.addEventListener('pinchended', this.onPinchEnd.bind(this));
+            },
+
+            onPinchStart: function () {
+                this.pinching = true;
+                this.debugText.setAttribute('value', 'Pinching!');
+                this.debugText.setAttribute('color', 'green');
+
+                // Find closest grabbable object
+                const grabbables = document.querySelectorAll('.grabbable');
+                let closestDist = this.data.grabDistance;
+                let closestGrabbable = null;
+
+                const handPos = new THREE.Vector3();
+                this.el.object3D.getWorldPosition(handPos);
+
+                grabbables.forEach(grabbable => {
+                    const objPos = new THREE.Vector3();
+                    grabbable.object3D.getWorldPosition(objPos);
+
+                    const distance = handPos.distanceTo(objPos);
+                    if (distance < closestDist) {
+                        closestDist = distance;
+                        closestGrabbable = grabbable;
+                    }
                 });
 
-                this.el.addEventListener('hand-tracking-lost', () => {
-                    console.log(`Hand tracking lost for ${this.el.getAttribute('hand-tracking-controls').hand} hand`);
-                });
+                if (closestGrabbable) {
+                    this.grabbed = closestGrabbable;
+                    this.debugText.setAttribute('value', 'Grabbed!');
+
+                    // Store the initial offset
+                    this.lastPosition.copy(handPos);
+                }
+            },
+
+            onPinchEnd: function () {
+                this.pinching = false;
+                this.debugText.setAttribute('value', 'Not pinching');
+                this.debugText.setAttribute('color', 'white');
+                this.grabbed = null;
+            },
+
+            tick: function () {
+                if (this.pinching && this.grabbed) {
+                    const handPos = new THREE.Vector3();
+                    this.el.object3D.getWorldPosition(handPos);
+
+                    // Calculate movement since last frame
+                    const delta = new THREE.Vector3().subVectors(handPos, this.lastPosition);
+
+                    // Apply movement to grabbed object
+                    this.grabbed.object3D.position.add(delta);
+
+                    // Update last position
+                    this.lastPosition.copy(handPos);
+                }
             }
         });
     </script>
@@ -60,10 +132,7 @@
         <a-box position="-0.351 0.301 -1.065"
                scale="0.2 0.2 0.2"
                material="side: double; color: #EF2D5E; transparent: true; opacity: 0.7"
-               class="grabbable"
-               grabbable
-               hoverable
-               draggable>
+               class="grabbable">
             <a-entity gaussian_splatting="src: Tate_0.2x.splat;"
                       position="0.157 -0.491 -0.027"
                       rotation="0 12.596 0"
@@ -72,63 +141,25 @@
         </a-box>
 
         <!-- Debug text to show hand tracking status -->
-        <a-text value="Hand tracking status will appear here"
+        <a-text value="Try pinching near the box to grab it"
                 position="0 1.6 -1"
                 scale="0.5 0.5 0.5"
                 align="center"
                 id="debug-text"></a-text>
 
-        <!-- Hand controllers with debug visuals -->
+        <!-- Hand controllers with custom pinch grabber -->
         <a-entity hand-tracking-controls="hand: left; modelColor: #ffcccc;"
-                  super-hands="colliderEvent: collidestart;
-                              colliderEndEvent: collideend;
-                              grabStartButtons: gripdown, pinchstart;
-                              grabEndButtons: gripup, pinchend"
                   finger-debug
-                  hand-tracking-logger>
+                  pinch-grabber>
         </a-entity>
 
         <a-entity hand-tracking-controls="hand: right; modelColor: #ffcccc;"
-                  super-hands="colliderEvent: collidestart;
-                              colliderEndEvent: collideend;
-                              grabStartButtons: gripdown, pinchstart;
-                              grabEndButtons: gripup, pinchend"
                   finger-debug
-                  hand-tracking-logger>
+                  pinch-grabber>
         </a-entity>
-
-        <!-- Fallback controller entities in case hand tracking fails -->
-        <a-entity oculus-touch-controls="hand: left" visible="false"></a-entity>
-        <a-entity oculus-touch-controls="hand: right" visible="false"></a-entity>
 
         <!-- Simple environment for reference -->
         <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
     </a-scene>
-
-    <script>
-        // Additional runtime debugging
-        window.addEventListener('load', () => {
-            const scene = document.querySelector('a-scene');
-            const debugText = document.getElementById('debug-text');
-
-            // Update debug text with hand tracking status
-            scene.addEventListener('enter-vr', () => {
-                debugText.setAttribute('value', 'Entered VR - Checking hand tracking...');
-
-                // Check if hand tracking is available
-                if (navigator.xr) {
-                    navigator.xr.isSessionSupported('immersive-ar').then(supported => {
-                        if (supported) {
-                            debugText.setAttribute('value', 'Hand tracking should be available');
-                        } else {
-                            debugText.setAttribute('value', 'AR not supported on this device');
-                        }
-                    });
-                } else {
-                    debugText.setAttribute('value', 'WebXR not available');
-                }
-            });
-        });
-    </script>
 </body>
 </html>
