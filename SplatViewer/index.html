@@ -17,7 +17,7 @@
 
         <!-- Box with splat as child -->
         <a-box id="splat-container"
-               position="-0.351 0.301 -1.065"
+               position="-0.351 0.6 -1.065"
                scale="0.2 0.2 0.2"
                material="side: double; color: #EF2D5E; transparent: true; opacity: 0.001;">
             <a-entity gaussian_splatting="src: Tate_0.2x.splat;"
@@ -28,17 +28,17 @@
         </a-box>
 
         <!-- Hand tracking component -->
+    
         <a-entity hand-tracker></a-entity>
 
-        <!-- Instructions -->
-        <a-text value="Pinch your fingers near the box to grab it"
-                position="0 1.6 -1"
-                scale="0.5 0.5 0.5"
-                align="center">
-        </a-text>
+        <!-- Instructions
+    <a-text value="Pinch your fingers near the box to grab it"
+            position="0 1.6 -1"
+            scale="0.5 0.5 0.5"
+            align="center">
+    </a-text>
+     -->
 
-        <!-- Simple environment for reference -->
-        <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
     </a-scene>
 
     <script>
@@ -75,14 +75,8 @@
                 this.grabOffset = new THREE.Vector3();
                 this.handPosition = new THREE.Vector3();
 
-                // Create debug text
-                this.debugText = document.createElement('a-text');
-                this.debugText.setAttribute('value', 'Hand tracking active');
-                this.debugText.setAttribute('position', '0 1.4 -1');
-                this.debugText.setAttribute('scale', '0.3 0.3 0.3');
-                this.debugText.setAttribute('align', 'center');
-                this.debugText.setAttribute('color', 'white');
-                this.el.sceneEl.appendChild(this.debugText);
+               
+               
             },
 
             tick: function () {
