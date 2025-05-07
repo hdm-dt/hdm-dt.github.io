@@ -2,120 +2,110 @@
 <html>
 <head>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://unpkg.com/super-hands@^3.0.5/dist/super-hands.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
     <script>
-        // Debug component to visualize finger positions
-        AFRAME.registerComponent('finger-debug', {
-            init: function () {
-                // Create debug spheres for index fingertips
-                this.indexTip = document.createElement('a-sphere');
-                this.indexTip.setAttribute('radius', '0.01');
-                this.indexTip.setAttribute('color', '#00ff00');
-                this.el.appendChild(this.indexTip);
-
-                // Create debug sphere for thumb tip
-                this.thumbTip = document.createElement('a-sphere');
-                this.thumbTip.setAttribute('radius', '0.01');
-                this.thumbTip.setAttribute('color', '#0000ff');
-                this.el.appendChild(this.thumbTip);
-            },
-
-            tick: function () {
-                if (this.el.components['hand-tracking-controls']) {
-                    if (this.el.components['hand-tracking-controls'].indexTipPosition) {
-                        const tipPos = this.el.components['hand-tracking-controls'].indexTipPosition;
-                        this.indexTip.setAttribute('position', tipPos);
-                    }
-
-                    if (this.el.components['hand-tracking-controls'].getJointPose) {
-                        const thumbPos = this.el.components['hand-tracking-controls'].getJointPose('thumb-tip');
-                        if (thumbPos) {
-                            this.thumbTip.setAttribute('position', thumbPos);
-                        }
-                    }
-                }
-            }
-        });
-
-        // Custom pinch-grabber component
-        AFRAME.registerComponent('pinch-grabber', {
+        // Direct pinch detection and grab component
+        AFRAME.registerComponent('direct-pinch-grab', {
             schema: {
-                pinchDistance: { default: 0.05 },
-                grabDistance: { default: 0.2 }
+                pinchThreshold: { default: 0.03 },  // Distance between thumb and index to detect pinch
+                grabRadius: { default: 0.3 }        // Distance to box to allow grab
             },
 
             init: function () {
+                this.hand = this.el.getAttribute('hand-tracking-controls').hand;
                 this.grabbed = null;
-                this.pinching = false;
-                this.lastPosition = new THREE.Vector3();
+                this.grabOffset = new THREE.Vector3();
 
-                // Debug text for pinch state
-                this.debugText = document.createElement('a-text');
-                this.debugText.setAttribute('value', 'Not pinching');
-                this.debugText.setAttribute('position', '0 0.1 0');
-                this.debugText.setAttribute('scale', '0.1 0.1 0.1');
-                this.debugText.setAttribute('align', 'center');
-                this.el.appendChild(this.debugText);
+                // Create debug spheres
+                this.indexSphere = document.createElement('a-sphere');
+                this.indexSphere.setAttribute('radius', '0.01');
+                this.indexSphere.setAttribute('color', 'green');
+                this.el.appendChild(this.indexSphere);
 
-                // Listen for pinch events from hand-tracking-controls
-                this.el.addEventListener('pinchstarted', this.onPinchStart.bind(this));
-                this.el.addEventListener('pinchended', this.onPinchEnd.bind(this));
-            },
+                this.thumbSphere = document.createElement('a-sphere');
+                this.thumbSphere.setAttribute('radius', '0.01');
+                this.thumbSphere.setAttribute('color', 'blue');
+                this.el.appendChild(this.thumbSphere);
 
-            onPinchStart: function () {
-                this.pinching = true;
-                this.debugText.setAttribute('value', 'Pinching!');
-                this.debugText.setAttribute('color', 'green');
+                // Create distance indicator
+                this.distanceIndicator = document.createElement('a-text');
+                this.distanceIndicator.setAttribute('value', 'Distance: ?');
+                this.distanceIndicator.setAttribute('position', '0 0.1 0');
+                this.distanceIndicator.setAttribute('scale', '0.1 0.1 0.1');
+                this.distanceIndicator.setAttribute('align', 'center');
+                this.el.appendChild(this.distanceIndicator);
 
-                // Find closest grabbable object
-                const grabbables = document.querySelectorAll('.grabbable');
-                let closestDist = this.data.grabDistance;
-                let closestGrabbable = null;
-
-                const handPos = new THREE.Vector3();
-                this.el.object3D.getWorldPosition(handPos);
-
-                grabbables.forEach(grabbable => {
-                    const objPos = new THREE.Vector3();
-                    grabbable.object3D.getWorldPosition(objPos);
-
-                    const distance = handPos.distanceTo(objPos);
-                    if (distance < closestDist) {
-                        closestDist = distance;
-                        closestGrabbable = grabbable;
-                    }
-                });
-
-                if (closestGrabbable) {
-                    this.grabbed = closestGrabbable;
-                    this.debugText.setAttribute('value', 'Grabbed!');
-
-                    // Store the initial offset
-                    this.lastPosition.copy(handPos);
-                }
-            },
-
-            onPinchEnd: function () {
-                this.pinching = false;
-                this.debugText.setAttribute('value', 'Not pinching');
-                this.debugText.setAttribute('color', 'white');
-                this.grabbed = null;
+                // Get the grabbable box
+                this.box = document.querySelector('#grabbable-box');
             },
 
             tick: function () {
-                if (this.pinching && this.grabbed) {
-                    const handPos = new THREE.Vector3();
-                    this.el.object3D.getWorldPosition(handPos);
+                // Skip if hand tracking isn't active
+                if (!this.el.components['hand-tracking-controls'] ||
+                    !this.el.components['hand-tracking-controls'].indexTipPosition) {
+                    return;
+                }
 
-                    // Calculate movement since last frame
-                    const delta = new THREE.Vector3().subVectors(handPos, this.lastPosition);
+                // Get finger positions
+                const indexPos = this.el.components['hand-tracking-controls'].indexTipPosition;
+                const thumbPos = this.el.components['hand-tracking-controls'].getJointPose ?
+                    this.el.components['hand-tracking-controls'].getJointPose('thumb-tip') :
+                    { x: 0, y: 0, z: 0 };
 
-                    // Apply movement to grabbed object
-                    this.grabbed.object3D.position.add(delta);
+                // Update debug spheres
+                this.indexSphere.setAttribute('position', indexPos);
+                if (thumbPos) {
+                    this.thumbSphere.setAttribute('position', thumbPos);
+                }
 
-                    // Update last position
-                    this.lastPosition.copy(handPos);
+                // Calculate distance between fingers
+                let pinchDistance = 1;
+                if (thumbPos) {
+                    pinchDistance = Math.sqrt(
+                        Math.pow(indexPos.x - thumbPos.x, 2) +
+                        Math.pow(indexPos.y - thumbPos.y, 2) +
+                        Math.pow(indexPos.z - thumbPos.z, 2)
+                    );
+                }
+
+                // Update distance indicator
+                this.distanceIndicator.setAttribute('value', `Distance: ${pinchDistance.toFixed(3)}`);
+
+                // Determine if pinching
+                const isPinching = pinchDistance < this.data.pinchThreshold;
+
+                // Change color based on pinch state
+                this.indexSphere.setAttribute('color', isPinching ? 'red' : 'green');
+                this.thumbSphere.setAttribute('color', isPinching ? 'red' : 'blue');
+
+                // Calculate hand position (midpoint between fingers)
+                const handPos = new THREE.Vector3(
+                    (indexPos.x + (thumbPos ? thumbPos.x : indexPos.x)) / 2,
+                    (indexPos.y + (thumbPos ? thumbPos.y : indexPos.y)) / 2,
+                    (indexPos.z + (thumbPos ? thumbPos.z : indexPos.z)) / 2
+                );
+
+                // Calculate distance to box
+                const boxPos = new THREE.Vector3();
+                this.box.object3D.getWorldPosition(boxPos);
+                const distanceToBox = handPos.distanceTo(boxPos);
+
+                // Handle grabbing logic
+                if (isPinching) {
+                    if (!this.grabbed && distanceToBox < this.data.grabRadius) {
+                        // Start grab
+                        this.grabbed = this.box;
+                        this.grabOffset.copy(boxPos).sub(handPos);
+                        this.distanceIndicator.setAttribute('value', `GRABBED! Dist: ${pinchDistance.toFixed(3)}`);
+                    }
+
+                    if (this.grabbed) {
+                        // Move the grabbed object
+                        const targetPos = new THREE.Vector3().copy(handPos).add(this.grabOffset);
+                        this.grabbed.object3D.position.copy(targetPos);
+                    }
+                } else {
+                    // Release grab
+                    this.grabbed = null;
                 }
             }
         });
@@ -125,14 +115,13 @@
     <div id="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
     <a-scene renderer="antialias: true"
              xr-mode-ui="enabled: true"
-             webxr="optionalFeatures: hand-tracking, hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;"
-             debug>
+             webxr="optionalFeatures: hand-tracking, hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;">
 
         <!-- Box with splat as child -->
-        <a-box position="-0.351 0.301 -1.065"
+        <a-box id="grabbable-box"
+               position="-0.351 0.301 -1.065"
                scale="0.2 0.2 0.2"
-               material="side: double; color: #EF2D5E; transparent: true; opacity: 0.7"
-               class="grabbable">
+               material="side: double; color: #EF2D5E; transparent: true; opacity: 0.7">
             <a-entity gaussian_splatting="src: Tate_0.2x.splat;"
                       position="0.157 -0.491 -0.027"
                       rotation="0 12.596 0"
@@ -140,22 +129,20 @@
             </a-entity>
         </a-box>
 
-        <!-- Debug text to show hand tracking status -->
-        <a-text value="Try pinching near the box to grab it"
+        <!-- Instructions -->
+        <a-text value="Pinch your fingers near the box to grab it"
                 position="0 1.6 -1"
                 scale="0.5 0.5 0.5"
-                align="center"
-                id="debug-text"></a-text>
+                align="center">
+        </a-text>
 
-        <!-- Hand controllers with custom pinch grabber -->
+        <!-- Hand controllers with direct pinch detection -->
         <a-entity hand-tracking-controls="hand: left; modelColor: #ffcccc;"
-                  finger-debug
-                  pinch-grabber>
+                  direct-pinch-grab>
         </a-entity>
 
         <a-entity hand-tracking-controls="hand: right; modelColor: #ffcccc;"
-                  finger-debug
-                  pinch-grabber>
+                  direct-pinch-grab>
         </a-entity>
 
         <!-- Simple environment for reference -->
