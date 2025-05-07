@@ -1,115 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script>
-        // Direct pinch detection and grab component
-        AFRAME.registerComponent('direct-pinch-grab', {
-            schema: {
-                pinchThreshold: { default: 0.03 },  // Distance between thumb and index to detect pinch
-                grabRadius: { default: 0.3 }        // Distance to box to allow grab
-            },
-
-            init: function () {
-                this.hand = this.el.getAttribute('hand-tracking-controls').hand;
-                this.grabbed = null;
-                this.grabOffset = new THREE.Vector3();
-
-                // Create debug spheres
-                this.indexSphere = document.createElement('a-sphere');
-                this.indexSphere.setAttribute('radius', '0.01');
-                this.indexSphere.setAttribute('color', 'green');
-                this.el.appendChild(this.indexSphere);
-
-                this.thumbSphere = document.createElement('a-sphere');
-                this.thumbSphere.setAttribute('radius', '0.01');
-                this.thumbSphere.setAttribute('color', 'blue');
-                this.el.appendChild(this.thumbSphere);
-
-                // Create distance indicator
-                this.distanceIndicator = document.createElement('a-text');
-                this.distanceIndicator.setAttribute('value', 'Distance: ?');
-                this.distanceIndicator.setAttribute('position', '0 0.1 0');
-                this.distanceIndicator.setAttribute('scale', '0.1 0.1 0.1');
-                this.distanceIndicator.setAttribute('align', 'center');
-                this.el.appendChild(this.distanceIndicator);
-
-                // Get the grabbable box
-                this.box = document.querySelector('#grabbable-box');
-            },
-
-            tick: function () {
-                // Skip if hand tracking isn't active
-                if (!this.el.components['hand-tracking-controls'] ||
-                    !this.el.components['hand-tracking-controls'].indexTipPosition) {
-                    return;
-                }
-
-                // Get finger positions
-                const indexPos = this.el.components['hand-tracking-controls'].indexTipPosition;
-                const thumbPos = this.el.components['hand-tracking-controls'].getJointPose ?
-                    this.el.components['hand-tracking-controls'].getJointPose('thumb-tip') :
-                    { x: 0, y: 0, z: 0 };
-
-                // Update debug spheres
-                this.indexSphere.setAttribute('position', indexPos);
-                if (thumbPos) {
-                    this.thumbSphere.setAttribute('position', thumbPos);
-                }
-
-                // Calculate distance between fingers
-                let pinchDistance = 1;
-                if (thumbPos) {
-                    pinchDistance = Math.sqrt(
-                        Math.pow(indexPos.x - thumbPos.x, 2) +
-                        Math.pow(indexPos.y - thumbPos.y, 2) +
-                        Math.pow(indexPos.z - thumbPos.z, 2)
-                    );
-                }
-
-                // Update distance indicator
-                this.distanceIndicator.setAttribute('value', `Distance: ${pinchDistance.toFixed(3)}`);
-
-                // Determine if pinching
-                const isPinching = pinchDistance < this.data.pinchThreshold;
-
-                // Change color based on pinch state
-                this.indexSphere.setAttribute('color', isPinching ? 'red' : 'green');
-                this.thumbSphere.setAttribute('color', isPinching ? 'red' : 'blue');
-
-                // Calculate hand position (midpoint between fingers)
-                const handPos = new THREE.Vector3(
-                    (indexPos.x + (thumbPos ? thumbPos.x : indexPos.x)) / 2,
-                    (indexPos.y + (thumbPos ? thumbPos.y : indexPos.y)) / 2,
-                    (indexPos.z + (thumbPos ? thumbPos.z : indexPos.z)) / 2
-                );
-
-                // Calculate distance to box
-                const boxPos = new THREE.Vector3();
-                this.box.object3D.getWorldPosition(boxPos);
-                const distanceToBox = handPos.distanceTo(boxPos);
-
-                // Handle grabbing logic
-                if (isPinching) {
-                    if (!this.grabbed && distanceToBox < this.data.grabRadius) {
-                        // Start grab
-                        this.grabbed = this.box;
-                        this.grabOffset.copy(boxPos).sub(handPos);
-                        this.distanceIndicator.setAttribute('value', `GRABBED! Dist: ${pinchDistance.toFixed(3)}`);
-                    }
-
-                    if (this.grabbed) {
-                        // Move the grabbed object
-                        const targetPos = new THREE.Vector3().copy(handPos).add(this.grabOffset);
-                        this.grabbed.object3D.position.copy(targetPos);
-                    }
-                } else {
-                    // Release grab
-                    this.grabbed = null;
-                }
-            }
-        });
-    </script>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.6.0/dist/aframe-extras.min.js"></script>
 </head>
 <body>
     <div id="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
@@ -118,7 +11,7 @@
              webxr="optionalFeatures: hand-tracking, hit-test, dom-overlay, local-floor, bounded-floor, layers; overlayElement: #overlay;">
 
         <!-- Box with splat as child -->
-        <a-box id="grabbable-box"
+        <a-box id="splat-container"
                position="-0.351 0.301 -1.065"
                scale="0.2 0.2 0.2"
                material="side: double; color: #EF2D5E; transparent: true; opacity: 0.7">
@@ -129,6 +22,9 @@
             </a-entity>
         </a-box>
 
+        <!-- Hand tracking component -->
+        <a-entity hand-tracker></a-entity>
+
         <!-- Instructions -->
         <a-text value="Pinch your fingers near the box to grab it"
                 position="0 1.6 -1"
@@ -136,17 +32,215 @@
                 align="center">
         </a-text>
 
-        <!-- Hand controllers with direct pinch detection -->
-        <a-entity hand-tracking-controls="hand: left; modelColor: #ffcccc;"
-                  direct-pinch-grab>
-        </a-entity>
-
-        <a-entity hand-tracking-controls="hand: right; modelColor: #ffcccc;"
-                  direct-pinch-grab>
-        </a-entity>
-
         <!-- Simple environment for reference -->
         <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
     </a-scene>
+
+    <script>
+        const orderedJoints = [
+            ["thumb-metacarpal", "thumb-phalanx-proximal", "thumb-phalanx-distal", "thumb-tip"],
+            ["index-finger-metacarpal", "index-finger-phalanx-proximal", "index-finger-phalanx-intermediate", "index-finger-phalanx-distal", "index-finger-tip"],
+            ["middle-finger-metacarpal", "middle-finger-phalanx-proximal", "middle-finger-phalanx-intermediate", "middle-finger-phalanx-distal", "middle-finger-tip"],
+            ["ring-finger-metacarpal", "ring-finger-phalanx-proximal", "ring-finger-phalanx-intermediate", "ring-finger-phalanx-distal", "ring-finger-tip"],
+            ["pinky-finger-metacarpal", "pinky-finger-phalanx-proximal", "pinky-finger-phalanx-intermediate", "pinky-finger-phalanx-distal", "pinky-finger-tip"]
+        ];
+
+        const pinchDistance = 0.03; // Adjust as needed
+        const grabDistance = 0.3;  // Distance to box to allow grab
+
+        function calculateDistance(point1, point2) {
+            return Math.sqrt(
+                (point1.x - point2.x) ** 2 +
+                (point1.y - point2.y) ** 2 +
+                (point1.z - point2.z) ** 2
+            );
+        }
+
+        AFRAME.registerComponent('hand-tracker', {
+            init: function () {
+                this.referenceSpace = null;
+                this.frame = null;
+                this.spheres = {};
+                this.splatContainer = document.getElementById('splat-container');
+
+                this.rightPinchDetected = false;
+                this.leftPinchDetected = false;
+
+                this.isGrabbing = false;
+                this.grabOffset = new THREE.Vector3();
+                this.handPosition = new THREE.Vector3();
+
+                // Create debug text
+                this.debugText = document.createElement('a-text');
+                this.debugText.setAttribute('value', 'Hand tracking active');
+                this.debugText.setAttribute('position', '0 1.4 -1');
+                this.debugText.setAttribute('scale', '0.3 0.3 0.3');
+                this.debugText.setAttribute('align', 'center');
+                this.debugText.setAttribute('color', 'white');
+                this.el.sceneEl.appendChild(this.debugText);
+            },
+
+            tick: function () {
+                if (!this.frame) {
+                    this.frame = this.el.sceneEl.frame;
+                }
+
+                if (!this.referenceSpace && this.el.sceneEl.renderer.xr.isPresenting) {
+                    this.referenceSpace = this.el.sceneEl.renderer.xr.getReferenceSpace();
+                }
+
+                if (this.frame && this.referenceSpace) {
+                    this.renderHandSkeleton();
+                    this.detectPinchAndGrab();
+                }
+            },
+
+            renderHandSkeleton: function () {
+                const session = this.el.sceneEl.renderer.xr.getSession();
+                if (!session) return;
+
+                const inputSources = session.inputSources;
+
+                for (const inputSource of inputSources) {
+                    if (inputSource.hand) {
+                        const hand = inputSource.hand;
+                        const handedness = inputSource.handedness;
+
+                        // Only render thumb and index fingertips for simplicity
+                        const thumbTip = hand.get("thumb-tip");
+                        const indexTip = hand.get("index-finger-tip");
+
+                        if (thumbTip && indexTip) {
+                            const thumbPose = this.frame.getJointPose(thumbTip, this.referenceSpace);
+                            const indexPose = this.frame.getJointPose(indexTip, this.referenceSpace);
+
+                            if (thumbPose && indexPose) {
+                                // Draw thumb tip
+                                if (!this.spheres[handedness + '_thumb-tip']) {
+                                    this.spheres[handedness + '_thumb-tip'] = this.drawSphere(0.01, thumbPose.transform.position, '#0000ff');
+                                } else {
+                                    this.spheres[handedness + '_thumb-tip'].object3D.position.copy(thumbPose.transform.position);
+                                }
+
+                                // Draw index tip
+                                if (!this.spheres[handedness + '_index-finger-tip']) {
+                                    this.spheres[handedness + '_index-finger-tip'] = this.drawSphere(0.01, indexPose.transform.position, '#00ff00');
+                                } else {
+                                    this.spheres[handedness + '_index-finger-tip'].object3D.position.copy(indexPose.transform.position);
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+
+            detectPinchAndGrab: function () {
+                const session = this.el.sceneEl.renderer.xr.getSession();
+                if (!session) return;
+
+                const inputSources = session.inputSources;
+                let anyPinchDetected = false;
+                let pinchingHand = null;
+                let pinchPosition = new THREE.Vector3();
+
+                for (const inputSource of inputSources) {
+                    if (inputSource.hand) {
+                        const thumbTip = inputSource.hand.get("thumb-tip");
+                        const indexTip = inputSource.hand.get("index-finger-tip");
+
+                        if (thumbTip && indexTip) {
+                            const thumbPose = this.frame.getJointPose(thumbTip, this.referenceSpace);
+                            const indexPose = this.frame.getJointPose(indexTip, this.referenceSpace);
+
+                            if (thumbPose && indexPose) {
+                                const distance = calculateDistance(
+                                    thumbPose.transform.position,
+                                    indexPose.transform.position
+                                );
+
+                                // Calculate midpoint between thumb and index
+                                const midPoint = new THREE.Vector3(
+                                    (thumbPose.transform.position.x + indexPose.transform.position.x) / 2,
+                                    (thumbPose.transform.position.y + indexPose.transform.position.y) / 2,
+                                    (thumbPose.transform.position.z + indexPose.transform.position.z) / 2
+                                );
+
+                                // Update debug text with distance
+                                this.debugText.setAttribute('value', `Pinch distance: ${distance.toFixed(3)}`);
+
+                                // Check for pinch gesture
+                                if (distance < pinchDistance) {
+                                    anyPinchDetected = true;
+                                    pinchingHand = inputSource.handedness;
+                                    pinchPosition.copy(midPoint);
+
+                                    // Change color of finger spheres when pinching
+                                    if (this.spheres[pinchingHand + '_thumb-tip']) {
+                                        this.spheres[pinchingHand + '_thumb-tip'].setAttribute('color', 'red');
+                                    }
+                                    if (this.spheres[pinchingHand + '_index-finger-tip']) {
+                                        this.spheres[pinchingHand + '_index-finger-tip'].setAttribute('color', 'red');
+                                    }
+                                } else {
+                                    // Reset color of finger spheres
+                                    if (this.spheres[inputSource.handedness + '_thumb-tip']) {
+                                        this.spheres[inputSource.handedness + '_thumb-tip'].setAttribute('color', '#0000ff');
+                                    }
+                                    if (this.spheres[inputSource.handedness + '_index-finger-tip']) {
+                                        this.spheres[inputSource.handedness + '_index-finger-tip'].setAttribute('color', '#00ff00');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Handle grabbing logic
+                const boxPosition = new THREE.Vector3();
+                this.splatContainer.object3D.getWorldPosition(boxPosition);
+
+                if (anyPinchDetected) {
+                    const distanceToBox = pinchPosition.distanceTo(boxPosition);
+                    this.debugText.setAttribute('value', `Pinching! Distance to box: ${distanceToBox.toFixed(3)}`);
+
+                    if (!this.isGrabbing && distanceToBox < grabDistance) {
+                        // Start grab
+                        this.isGrabbing = true;
+                        this.grabOffset.copy(boxPosition).sub(pinchPosition);
+                        this.debugText.setAttribute('value', 'GRABBED!');
+                        this.debugText.setAttribute('color', 'green');
+
+                        // Change box color when grabbed
+                        this.splatContainer.setAttribute('color', '#00FF00');
+                    }
+
+                    if (this.isGrabbing) {
+                        // Move the box with the pinching hand
+                        const targetPosition = new THREE.Vector3().copy(pinchPosition).add(this.grabOffset);
+                        this.splatContainer.object3D.position.copy(targetPosition);
+                    }
+                } else {
+                    // Release grab
+                    if (this.isGrabbing) {
+                        this.isGrabbing = false;
+                        this.debugText.setAttribute('value', 'Released');
+                        this.debugText.setAttribute('color', 'white');
+
+                        // Reset box color
+                        this.splatContainer.setAttribute('color', '#EF2D5E');
+                    }
+                }
+            },
+
+            drawSphere: function (radius, position, color) {
+                const sphere = document.createElement('a-sphere');
+                sphere.setAttribute('radius', radius);
+                sphere.setAttribute('color', color);
+                sphere.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+                this.el.appendChild(sphere);
+                return sphere;
+            }
+        });
+    </script>
 </body>
 </html>
