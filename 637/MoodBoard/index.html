@@ -30,6 +30,7 @@
       will-change: transform;
       transform-origin: center center;
       display: block;
+      position: absolute;
     }
   </style>
 </head>
@@ -40,6 +41,7 @@
 
   <script>
     const img = document.getElementById('zoom-image');
+    const container = document.getElementById('container');
     let scale = 1;
     let minScale = 1;
     let lastScale = 1;
@@ -47,6 +49,8 @@
     let lastX = 0, lastY = 0;
     let startX = 0, startY = 0;
     let initialDistance = null;
+    let imgWidth = 0;
+    let imgHeight = 0;
 
     function getDistance(touches) {
       const [touch1, touch2] = touches;
@@ -55,18 +59,44 @@
       return Math.sqrt(dx * dx + dy * dy);
     }
 
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
     function updateTransform() {
+      // Calculate image display dimensions
+      const displayWidth = imgWidth * scale;
+      const displayHeight = imgHeight * scale;
+
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+
+      const maxOffsetX = Math.max(0, (displayWidth - containerWidth) / 2);
+      const maxOffsetY = Math.max(0, (displayHeight - containerHeight) / 2);
+
+      posX = clamp(posX, -maxOffsetX, maxOffsetX);
+      posY = clamp(posY, -maxOffsetY, maxOffsetY);
+
       img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
     }
 
     img.onload = () => {
-      const containerWidth = window.innerWidth;
-      const naturalWidth = img.naturalWidth;
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      imgWidth = img.naturalWidth;
+      imgHeight = img.naturalHeight;
 
-      // Calculate minimum scale to fit the screen width
-      minScale = containerWidth / naturalWidth;
+      // Fit image to width
+      minScale = containerWidth / imgWidth;
       scale = minScale;
       lastScale = scale;
+
+      // Center vertically if needed
+      const scaledHeight = imgHeight * scale;
+      if (scaledHeight < containerHeight) {
+        posY = 0;
+      }
+
       updateTransform();
     };
 
@@ -87,13 +117,14 @@
         const newDistance = getDistance(e.touches);
         scale = lastScale * (newDistance / initialDistance);
 
-        // Prevent zooming out past minScale
+        // Clamp scale
         if (scale < minScale) scale = minScale;
       } else if (e.touches.length === 1) {
         const touch = e.touches[0];
         posX = touch.clientX - startX;
         posY = touch.clientY - startY;
       }
+
       updateTransform();
     });
 
