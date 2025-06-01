@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+  <meta charset="UTF-8">
+  <title>Zoomable Image</title>
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background-color: #000;
+      overflow: hidden;
+      touch-action: none; /* Prevent default gestures */
+    }
+
+    #container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    img {
+      touch-action: none;
+      max-width: none;
+      user-select: none;
+      will-change: transform;
+      transform-origin: center center;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <img id="zoom-image" src="image.png" alt="Zoomable">
+  </div>
+
+  <script>
+    const img = document.getElementById('zoom-image');
+    let scale = 1;
+    let lastScale = 1;
+    let posX = 0, posY = 0;
+    let lastX = 0, lastY = 0;
+    let startX = 0, startY = 0;
+
+    let initialDistance = null;
+
+    function getDistance(touches) {
+      const [touch1, touch2] = touches;
+      const dx = touch2.clientX - touch1.clientX;
+      const dy = touch2.clientY - touch1.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    img.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        initialDistance = getDistance(e.touches);
+        lastScale = scale;
+      } else if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        startX = touch.clientX - lastX;
+        startY = touch.clientY - lastY;
+      }
+    });
+
+    img.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (e.touches.length === 2) {
+        const newDistance = getDistance(e.touches);
+        scale = lastScale * (newDistance / initialDistance);
+      } else if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        posX = touch.clientX - startX;
+        posY = touch.clientY - startY;
+      }
+
+      img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+    });
+
+    img.addEventListener('touchend', () => {
+      lastX = posX;
+      lastY = posY;
+    });
+  </script>
+</body>
+</html>
