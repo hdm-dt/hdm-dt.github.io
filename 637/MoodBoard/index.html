@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta charset="UTF-8">
   <title>Zoomable Image</title>
   <style>
     html, body {
       margin: 0;
+      padding: 0;
       height: 100%;
-      background-color: #000;
+      background: black;
       overflow: hidden;
-      touch-action: none; /* Prevent default gestures */
+      touch-action: none;
     }
 
     #container {
@@ -20,15 +21,15 @@
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      position: relative;
     }
 
     img {
-      touch-action: none;
-      max-width: none;
       user-select: none;
+      touch-action: none;
       will-change: transform;
-      transform-origin: center center;
+      transform-origin: 0 0;
+      max-width: none;
+      max-height: none;
     }
   </style>
 </head>
@@ -39,19 +40,46 @@
 
   <script>
     const img = document.getElementById('zoom-image');
+    const container = document.getElementById('container');
+
     let scale = 1;
+    let minScale = 1;
     let lastScale = 1;
     let posX = 0, posY = 0;
     let lastX = 0, lastY = 0;
     let startX = 0, startY = 0;
-
     let initialDistance = null;
 
+    function setInitialScale() {
+      const screenWidth = container.offsetWidth;
+      const naturalWidth = img.naturalWidth;
+
+      minScale = screenWidth / naturalWidth;
+      scale = minScale;
+      lastScale = scale;
+
+      // Reset position and apply initial transform
+      posX = 0;
+      posY = 0;
+      lastX = 0;
+      lastY = 0;
+
+      applyTransform();
+    }
+
+    function applyTransform() {
+      img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+    }
+
+    img.addEventListener('load', () => {
+      setInitialScale();
+    });
+
     function getDistance(touches) {
-      const [touch1, touch2] = touches;
-      const dx = touch2.clientX - touch1.clientX;
-      const dy = touch2.clientY - touch1.clientY;
-      return Math.sqrt(dx * dx + dy * dy);
+      const [a, b] = touches;
+      const dx = b.clientX - a.clientX;
+      const dy = b.clientY - a.clientY;
+      return Math.hypot(dx, dy);
     }
 
     img.addEventListener('touchstart', (e) => {
@@ -67,16 +95,22 @@
 
     img.addEventListener('touchmove', (e) => {
       e.preventDefault();
+
       if (e.touches.length === 2) {
-        const newDistance = getDistance(e.touches);
-        scale = lastScale * (newDistance / initialDistance);
+        const currentDistance = getDistance(e.touches);
+        let newScale = lastScale * (currentDistance / initialDistance);
+
+        // Clamp scale between minScale and max
+        const maxScale = 5;
+        scale = Math.max(minScale, Math.min(maxScale, newScale));
+
       } else if (e.touches.length === 1) {
         const touch = e.touches[0];
         posX = touch.clientX - startX;
         posY = touch.clientY - startY;
       }
 
-      img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+      applyTransform();
     });
 
     img.addEventListener('touchend', () => {
