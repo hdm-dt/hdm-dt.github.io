@@ -4,21 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Image Viewer</title>
-  <style>
-    html, body {
-      margin: 0;
-      background-color: #000;
-      overflow: hidden;
-      height: 100%;
-      font-family: "Helvetica Neue", sans-serif;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      touch-action: manipulation;
-    }
-
+<style>
+  @font-face {
+    font-family: 'ABCGravity';
+    src: url('ABCGravity-Normal.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  html, body {
+    margin: 0;
+    background-color: #000;
+    overflow: hidden;
+    height: 100%;
+    font-family: 'ABCGravity', sans-serif;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+  }
     #viewer {
       position: relative;
       flex-grow: 1;
