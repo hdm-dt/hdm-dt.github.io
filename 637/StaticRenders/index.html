@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Responsive Image Viewer</title>
   <style>
     html, body {
@@ -13,10 +13,10 @@
       overflow: hidden;
       font-family: 'ABCGravity', sans-serif;
       color: white;
+      touch-action: manipulation;
     }
 
     #viewer {
-      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -30,6 +30,7 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      max-width: 100%;
     }
 
     #displayed-image {
@@ -67,20 +68,6 @@
 
     #prev { left: 10px; }
     #next { right: 10px; }
-
-    #fullscreen-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      color: white;
-      background: none;
-      border: 1px solid white;
-      border-radius: 4px;
-      padding: 0.25rem 0.5rem;
-      font-size: 0.8rem;
-      cursor: pointer;
-      z-index: 10;
-    }
   </style>
 </head>
 <body>
@@ -91,7 +78,6 @@
       <div id="image-label"></div>
     </div>
     <button class="arrow" id="next">&gt;</button>
-    <button id="fullscreen-btn">⛶</button>
   </div>
 
   <script>
@@ -109,10 +95,8 @@
     ];
 
     let currentIndex = 0;
-
     const img = document.getElementById('displayed-image');
     const label = document.getElementById('image-label');
-    const wrapper = document.getElementById('image-wrapper');
 
     function showImage(index) {
       if (index < 0) index = imageList.length - 1;
@@ -122,34 +106,23 @@
       label.textContent = imageList[currentIndex].label;
     }
 
-    document.getElementById('prev').onclick = () => showImage(currentIndex - 1);
-    document.getElementById('next').onclick = () => showImage(currentIndex + 1);
-
     function resizeImage() {
-      const labelHeight = label.offsetHeight + 16; // add margin buffer
-      const availableHeight = window.innerHeight - labelHeight;
+      const vpHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      const labelHeight = label.offsetHeight + 16;
+      const availableHeight = vpHeight - labelHeight;
       img.style.maxHeight = `${availableHeight}px`;
     }
+
+    document.getElementById('prev').onclick = () => showImage(currentIndex - 1);
+    document.getElementById('next').onclick = () => showImage(currentIndex + 1);
 
     window.addEventListener('resize', resizeImage);
     img.addEventListener('load', resizeImage);
     window.addEventListener('orientationchange', () => {
-      setTimeout(resizeImage, 300); // delay helps iOS stabilize dimensions
+      setTimeout(resizeImage, 300);
     });
 
-    // Fullscreen toggle
-    const fsButton = document.getElementById('fullscreen-btn');
-    fsButton.onclick = () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
-    };
-
-    window.onload = () => {
-      showImage(0);
-    };
+    window.onload = () => showImage(0);
   </script>
 </body>
 </html>
