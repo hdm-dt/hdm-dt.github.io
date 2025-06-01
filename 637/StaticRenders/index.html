@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+  <title>Image Viewer</title>
+  <style>
+    html, body {
+      margin: 0;
+      background-color: #000;
+      overflow: hidden;
+      touch-action: none;
+      height: 100%;
+    }
+
+    #viewer {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #displayed-image {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: center center;
+      max-width: none;
+      max-height: none;
+      user-select: none;
+      will-change: transform;
+      touch-action: none;
+    }
+
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 3rem;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      z-index: 10;
+      user-select: none;
+    }
+
+    #prev {
+      left: 10px;
+    }
+
+    #next {
+      right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewer">
+    <button class="arrow" id="prev">&#8592;</button>
+    <img id="displayed-image" src="" alt="Image Viewer">
+    <button class="arrow" id="next">&#8594;</button>
+  </div>
+
+  <script>
+const imageList = [
+  'boulevard_11.jpg',
+  'east_02.jpg',
+  'event_space_07.jpg',
+  'looking_up_17_dusk.jpg',
+  'street_elevation_11.jpg',
+  'street_level_12.jpg',
+  'XC190-HdM637_IM_2406_IM07_Tower view_013d.jpg',
+  'XC190-HdM637_IM_2412_IM17_Rooftop_pool_3_004b_EDIT.jpg',
+  'XC190-HdM-637-Tirana_2406_CI_IM08_Tower view_009b.jpg',
+  'XC190-HdM-637-Tirana_2412_CI_IM16_Ground floor side_006a.jpg'
+];
+
+
+    const img = document.getElementById('displayed-image');
+    const viewer = document.getElementById('viewer');
+    const prevBtn = document.getElementById('prev');
+    const nextBtn = document.getElementById('next');
+
+    let currentIndex = 0;
+    let scale = 1, minScale = 1, lastScale = 1;
+    let posX = 0, posY = 0, lastX = 0, lastY = 0;
+    let startX = 0, startY = 0;
+    let initialDistance = null;
+    let isDragging = false, dragStartX = 0;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function getDistance(touches) {
+      const [a, b] = touches;
+      const dx = b.clientX - a.clientX;
+      const dy = b.clientY - a.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function showImage(index) {
+      if (index < 0) index = imageList.length - 1;
+      if (index >= imageList.length) index = 0;
+      currentIndex = index;
+      img.src = imageList[currentIndex];
+    }
+
+    function resetTransform() {
+      scale = minScale;
+      lastScale = scale;
+      posX = 0;
+      posY = 0;
+      lastX = 0;
+      lastY = 0;
+    }
+
+    function updateTransform() {
+      const displayWidth = img.naturalWidth * scale;
+      const displayHeight = img.naturalHeight * scale;
+      const maxOffsetX = Math.max(0, (displayWidth - viewer.clientWidth) / 2);
+      const maxOffsetY = Math.max(0, (displayHeight - viewer.clientHeight) / 2);
+      posX = clamp(posX, -maxOffsetX, maxOffsetX);
+      posY = clamp(posY, -maxOffsetY, maxOffsetY);
+      img.style.transform = `translate(-50%, -50%) translate(${posX}px, ${posY}px) scale(${scale})`;
+    }
+
+    img.onload = () => {
+      const containerWidth = viewer.clientWidth;
+      minScale = containerWidth / img.naturalWidth;
+      resetTransform();
+      updateTransform();
+    };
+
+    prevBtn.onclick = () => {
+      showImage(currentIndex - 1);
+    };
+
+    nextBtn.onclick = () => {
+      showImage(currentIndex + 1);
+    };
+
+    viewer.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        initialDistance = getDistance(e.touches);
+        lastScale = scale;
+      } else if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        startX = touch.clientX - lastX;
+        startY = touch.clientY - lastY;
+        dragStartX = touch.clientX;
+        isDragging = true;
+      }
+    });
+
+    viewer.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (e.touches.length === 2) {
+        const newDistance = getDistance(e.touches);
+        scale = lastScale * (newDistance / initialDistance);
+        if (scale < minScale) scale = minScale;
+        updateTransform();
+      } else if (e.touches.length === 1 && isDragging) {
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - dragStartX;
+
+        // Swipe detection
+        if (scale === minScale && Math.abs(deltaX) > 50) {
+          isDragging = false;
+          if (deltaX < 0) {
+            showImage(currentIndex + 1);
+          } else {
+            showImage(currentIndex - 1);
+          }
+          return;
+        }
+
+        posX = touch.clientX - startX;
+        posY = touch.clientY - startY;
+        updateTransform();
+      }
+    });
+
+    viewer.addEventListener('touchend', () => {
+      lastX = posX;
+      lastY = posY;
+      isDragging = false;
+    });
+
+    window.onload = () => {
+      showImage(currentIndex);
+    };
+  </script>
+</body>
+</html>
