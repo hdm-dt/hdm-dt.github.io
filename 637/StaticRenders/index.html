@@ -1,145 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Image Viewer</title>
-<style>
-  @font-face {
-    font-family: 'ABCGravity';
-    src: url('ABCGravity-Normal.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-  }
-  
-html, body {
-  margin: 0;
-  padding: 0;
-  background-color: #000;
-  height: 100%;
-  overflow: hidden;
-  font-family: 'ABCGravity', sans-serif;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Responsive Image Viewer</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'ABCGravity', sans-serif;
+      color: white;
+    }
 
-#viewer {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
+    #viewer {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+    }
 
-#image-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: hidden;
-}
+    #image-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
 
+    #displayed-image {
+      max-width: 100vw;
+      object-fit: contain;
+      user-select: none;
+      pointer-events: none;
+    }
 
-#displayed-image {
-  max-width: 100vw;
-  max-height: calc(100vh - 40px); /* leave room for label */
-  object-fit: contain;
-  user-select: none;
-  pointer-events: none;
-}
+    #image-label {
+      font-size: 1rem;
+      margin-top: 8px;
+      text-align: center;
+      color: white;
+      max-width: 90vw;
+      word-break: break-word;
+    }
 
-#image-label {
-  font-size: 1rem;
-  margin-top: 8px;
-  text-align: center;
-  color: white;
-  max-width: 90vw;
-  word-break: break-word;
-}
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.5rem;
+      color: white;
+      background: none;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      z-index: 10;
+    }
 
-.arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.5rem;
-  color: white;
-  background: none;
-  border: none;
-  padding: 0.5rem;
-  cursor: pointer;
-  z-index: 10;
-  user-select: none;
-}
+    .arrow:active {
+      opacity: 0.5;
+    }
 
-.arrow:active {
-  opacity: 0.5;
-}
+    #prev { left: 10px; }
+    #next { right: 10px; }
 
-#prev {
-  left: 10px;
-}
-
-#next {
-  right: 10px;
-}
-
-
-
+    #fullscreen-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: white;
+      background: none;
+      border: 1px solid white;
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
-
-<div id="viewer">
-  <button class="arrow" id="prev">&lt;</button>
-  <div id="image-wrapper">
-    <img id="displayed-image" src="" alt="Image Viewer">
-    <div id="image-label"></div>
+  <div id="viewer">
+    <button class="arrow" id="prev">&lt;</button>
+    <div id="image-wrapper">
+      <img id="displayed-image" src="" alt="Image Viewer" />
+      <div id="image-label"></div>
+    </div>
+    <button class="arrow" id="next">&gt;</button>
+    <button id="fullscreen-btn">⛶</button>
   </div>
-  <button class="arrow" id="next">&gt;</button>
-</div>
-
-
 
   <script>
-const imageList = [
-  { src: 'boulevard_11.jpg', label: 'Boulevard View' },
-  { src: 'east_02.jpg', label: 'East Entrance' },
-  { src: 'event_space_07.jpg', label: 'Event Space Interior' },
-  { src: 'looking_up_17_dusk.jpg', label: 'Looking Up at Dusk' },
-  { src: 'street_elevation_11.jpg', label: 'Street Elevation' },
-  { src: 'street_level_12.jpg', label: 'Street Level View' },
-  { src: 'XC190-HdM637_IM_2406_IM07_Tower view_013d.jpg', label: 'Tower View 1' },
-  { src: 'XC190-HdM637_IM_2412_IM17_Rooftop_pool_3_004b_EDIT.jpg', label: 'Rooftop Pool' },
-  { src: 'XC190-HdM-637-Tirana_2406_CI_IM08_Tower view_009b.jpg', label: 'Tower View 2' },
-  { src: 'XC190-HdM-637-Tirana_2412_CI_IM16_Ground floor side_006a.jpg', label: 'Ground Floor Side' }
-];
+    const imageList = [
+      { src: 'boulevard_11.jpg', label: 'Boulevard View' },
+      { src: 'east_02.jpg', label: 'East Entrance' },
+      { src: 'event_space_07.jpg', label: 'Event Space Interior' },
+      { src: 'looking_up_17_dusk.jpg', label: 'Looking Up at Dusk' },
+      { src: 'street_elevation_11.jpg', label: 'Street Elevation' },
+      { src: 'street_level_12.jpg', label: 'Street Level View' },
+      { src: 'XC190-HdM637_IM_2406_IM07_Tower view_013d.jpg', label: 'Tower View 1' },
+      { src: 'XC190-HdM637_IM_2412_IM17_Rooftop_pool_3_004b_EDIT.jpg', label: 'Rooftop Pool' },
+      { src: 'XC190-HdM-637-Tirana_2406_CI_IM08_Tower view_009b.jpg', label: 'Tower View 2' },
+      { src: 'XC190-HdM-637-Tirana_2412_CI_IM16_Ground floor side_006a.jpg', label: 'Ground Floor Side' }
+    ];
 
     let currentIndex = 0;
+
     const img = document.getElementById('displayed-image');
     const label = document.getElementById('image-label');
+    const wrapper = document.getElementById('image-wrapper');
 
-function showImage(index) {
-  if (index < 0) index = imageList.length - 1;
-  if (index >= imageList.length) index = 0;
-  currentIndex = index;
-  img.src = imageList[currentIndex].src;
-  label.textContent = imageList[currentIndex].label;
-}
+    function showImage(index) {
+      if (index < 0) index = imageList.length - 1;
+      if (index >= imageList.length) index = 0;
+      currentIndex = index;
+      img.src = imageList[currentIndex].src;
+      label.textContent = imageList[currentIndex].label;
+    }
 
+    document.getElementById('prev').onclick = () => showImage(currentIndex - 1);
+    document.getElementById('next').onclick = () => showImage(currentIndex + 1);
 
-    document.getElementById('prev').addEventListener('click', () => {
-      showImage(currentIndex - 1);
+    function resizeImage() {
+      const labelHeight = label.offsetHeight + 16; // add margin buffer
+      const availableHeight = window.innerHeight - labelHeight;
+      img.style.maxHeight = `${availableHeight}px`;
+    }
+
+    window.addEventListener('resize', resizeImage);
+    img.addEventListener('load', resizeImage);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(resizeImage, 300); // delay helps iOS stabilize dimensions
     });
 
-    document.getElementById('next').addEventListener('click', () => {
-      showImage(currentIndex + 1);
-    });
+    // Fullscreen toggle
+    const fsButton = document.getElementById('fullscreen-btn');
+    fsButton.onclick = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    };
 
     window.onload = () => {
       showImage(0);
