@@ -61,34 +61,18 @@
       pointer-events: none;
     }
 
-#image-label {
-  position: fixed;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  font-size: 1rem;
-  color: white;
-  background: rgba(0, 0, 0, 0.4); /* optional for contrast */
-  padding: 0.25rem 0.75rem;
-  border-radius: 8px;
-  z-index: 998;
-  pointer-events: none;
-}
-
-
-.arrow {
-  position: fixed;
-  top: 50%; /* was 50% */
-  transform: translateY(-50%);
-  font-size: 1.5rem;
-  color: white;
-  background: none;
-  border: none;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  z-index: 999;
-}
+    .arrow {
+      position: fixed;
+      top: 45%; /* Adjusted up slightly */
+      transform: translateY(-50%);
+      font-size: 1.5rem;
+      color: white;
+      background: none;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      z-index: 999;
+    }
 
     #prev {
       left: clamp(10px, 3vw, 30px);
@@ -105,48 +89,42 @@
 </head>
 <body>
   <button class="arrow" id="prev">&lt;</button>
-<div id="viewer">
-  <div id="image-container">
-    <img id="displayed-image" src="" alt="Image Viewer" />
+  <div id="viewer">
+    <div id="image-container">
+      <img id="displayed-image" src="" alt="Image Viewer" />
+    </div>
   </div>
-  <div style="height: 0rem;"></div> <!-- Invisible spacer -->
-</div>
-<div id="image-label"></div> <!-- Visible counter, outside viewer -->
   <button class="arrow" id="next">&gt;</button>
 
   <script>
     const imageList = [
-      { src: 'boulevard_11.jpg', label: '' },
-      { src: 'east_02.jpg', label: '' },
-      { src: 'event_space_07.jpg', label: '' },
-      { src: 'looking_up_17_dusk.jpg', label: '' },
-      { src: 'street_elevation_11.jpg', label: '' },
-      { src: 'street_level_12.jpg', label: '' },
-      { src: 'XC190-HdM637_IM_2406_IM07_Tower view_013d.jpg', label: '' },
-      { src: 'XC190-HdM637_IM_2412_IM17_Rooftop_pool_3_004b_EDIT.jpg', label: '' },
-      { src: 'XC190-HdM-637-Tirana_2406_CI_IM08_Tower view_009b.jpg', label: '' },
-      { src: 'XC190-HdM-637-Tirana_2412_CI_IM16_Ground floor side_006a.jpg', label: '' }
+      { src: 'boulevard_11.jpg' },
+      { src: 'east_02.jpg' },
+      { src: 'event_space_07.jpg' },
+      { src: 'looking_up_17_dusk.jpg' },
+      { src: 'street_elevation_11.jpg' },
+      { src: 'street_level_12.jpg' },
+      { src: 'XC190-HdM637_IM_2406_IM07_Tower view_013d.jpg' },
+      { src: 'XC190-HdM637_IM_2412_IM17_Rooftop_pool_3_004b_EDIT.jpg' },
+      { src: 'XC190-HdM-637-Tirana_2406_CI_IM08_Tower view_009b.jpg' },
+      { src: 'XC190-HdM-637-Tirana_2412_CI_IM16_Ground floor side_006a.jpg' }
     ];
 
     let currentIndex = 0;
     const img = document.getElementById('displayed-image');
-    const label = document.getElementById('image-label');
     const viewer = document.getElementById('viewer');
 
-function showImage(index) {
-  if (index < 0) index = imageList.length - 1;
-  if (index >= imageList.length) index = 0;
-  currentIndex = index;
-  viewer.classList.remove('visible'); // hide viewer while loading
-  img.src = imageList[currentIndex].src;
-  label.textContent = `${currentIndex + 1}/${imageList.length}`;
-}
+    function showImage(index) {
+      if (index < 0) index = imageList.length - 1;
+      if (index >= imageList.length) index = 0;
+      currentIndex = index;
+      viewer.classList.remove('visible'); // hide viewer while loading
+      img.src = imageList[currentIndex].src;
+    }
 
     function resizeImage() {
       const vpHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      const labelHeight = label.offsetHeight + 16;
-      const availableHeight = vpHeight - labelHeight;
-      img.style.maxHeight = `${availableHeight}px`;
+      img.style.maxHeight = `${vpHeight - 32}px`;
     }
 
     img.addEventListener('load', () => {
