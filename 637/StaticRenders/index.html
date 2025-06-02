@@ -108,16 +108,16 @@
 
   <script>
     const imageList = [
-      { src: 'boulevard_11.jpg', label: 'Boulevard View' },
-      { src: 'east_02.jpg', label: 'East Entrance' },
-      { src: 'event_space_07.jpg', label: 'Event Space Interior' },
-      { src: 'looking_up_17_dusk.jpg', label: 'Looking Up at Dusk' },
-      { src: 'street_elevation_11.jpg', label: 'Street Elevation' },
-      { src: 'street_level_12.jpg', label: 'Street Level View' },
-      { src: 'XC190-HdM637_IM_2406_IM07_Tower view_013d.jpg', label: 'Tower View 1' },
-      { src: 'XC190-HdM637_IM_2412_IM17_Rooftop_pool_3_004b_EDIT.jpg', label: 'Rooftop Pool' },
-      { src: 'XC190-HdM-637-Tirana_2406_CI_IM08_Tower view_009b.jpg', label: 'Tower View 2' },
-      { src: 'XC190-HdM-637-Tirana_2412_CI_IM16_Ground floor side_006a.jpg', label: 'Ground Floor Side' }
+      { src: 'boulevard_11.jpg', label: '' },
+      { src: 'east_02.jpg', label: '' },
+      { src: 'event_space_07.jpg', label: '' },
+      { src: 'looking_up_17_dusk.jpg', label: '' },
+      { src: 'street_elevation_11.jpg', label: '' },
+      { src: 'street_level_12.jpg', label: '' },
+      { src: 'XC190-HdM637_IM_2406_IM07_Tower view_013d.jpg', label: '' },
+      { src: 'XC190-HdM637_IM_2412_IM17_Rooftop_pool_3_004b_EDIT.jpg', label: '' },
+      { src: 'XC190-HdM-637-Tirana_2406_CI_IM08_Tower view_009b.jpg', label: '' },
+      { src: 'XC190-HdM-637-Tirana_2412_CI_IM16_Ground floor side_006a.jpg', label: '' }
     ];
 
     let currentIndex = 0;
@@ -125,14 +125,14 @@
     const label = document.getElementById('image-label');
     const viewer = document.getElementById('viewer');
 
-    function showImage(index) {
-      if (index < 0) index = imageList.length - 1;
-      if (index >= imageList.length) index = 0;
-      currentIndex = index;
-      viewer.classList.remove('visible'); // hide viewer while loading
-      img.src = imageList[currentIndex].src;
-      label.textContent = imageList[currentIndex].label;
-    }
+function showImage(index) {
+  if (index < 0) index = imageList.length - 1;
+  if (index >= imageList.length) index = 0;
+  currentIndex = index;
+  viewer.classList.remove('visible'); // hide viewer while loading
+  img.src = imageList[currentIndex].src;
+  label.textContent = `${currentIndex + 1}/${imageList.length}`;
+}
 
     function resizeImage() {
       const vpHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
