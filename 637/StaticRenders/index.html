@@ -61,27 +61,34 @@
       pointer-events: none;
     }
 
-    #image-label {
-      margin-top: 8px;
-      text-align: center;
-      font-size: 1rem;
-      max-width: 90vw;
-      word-break: break-word;
-    }
+#image-label {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 1rem;
+  color: white;
+  background: rgba(0, 0, 0, 0.4); /* optional for contrast */
+  padding: 0.25rem 0.75rem;
+  border-radius: 8px;
+  z-index: 998;
+  pointer-events: none;
+}
 
-    /* Arrows: full-screen layer, always centered vertically */
-    .arrow {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.5rem;
-      color: white;
-      background: none;
-      border: none;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      z-index: 999;
-    }
+
+.arrow {
+  position: fixed;
+  top: 45%; /* was 50% */
+  transform: translateY(-50%);
+  font-size: 1.5rem;
+  color: white;
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  z-index: 999;
+}
 
     #prev {
       left: clamp(10px, 3vw, 30px);
@@ -98,12 +105,13 @@
 </head>
 <body>
   <button class="arrow" id="prev">&lt;</button>
-  <div id="viewer">
-    <div id="image-container">
-      <img id="displayed-image" src="" alt="Image Viewer" />
-    </div>
-    <div id="image-label"></div>
+<div id="viewer">
+  <div id="image-container">
+    <img id="displayed-image" src="" alt="Image Viewer" />
   </div>
+  <div style="height: 1.5rem;"></div> <!-- Invisible spacer -->
+</div>
+<div id="image-label"></div> <!-- Visible counter, outside viewer -->
   <button class="arrow" id="next">&gt;</button>
 
   <script>
