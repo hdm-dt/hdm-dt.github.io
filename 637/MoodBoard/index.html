@@ -4,7 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes">
   <meta charset="UTF-8">
   <title>Herzog & de Meuron | 637_Mood Board</title>
- <link rel="shortcut icon" href="favicon.ico">
+  <link rel="shortcut icon" href="favicon.ico">
 
   <style>
     html, body {
@@ -33,6 +33,7 @@
       transform-origin: center center;
       display: block;
       position: absolute;
+      transition: transform 0.05s ease-out;
     }
   </style>
 </head>
@@ -44,6 +45,7 @@
   <script>
     const img = document.getElementById('zoom-image');
     const container = document.getElementById('container');
+
     let scale = 1;
     let minScale = 1;
     let lastScale = 1;
@@ -53,6 +55,8 @@
     let initialDistance = null;
     let imgWidth = 0;
     let imgHeight = 0;
+
+    let lastTapTime = 0;
 
     function getDistance(touches) {
       const [touch1, touch2] = touches;
@@ -66,7 +70,6 @@
     }
 
     function updateTransform() {
-      // Calculate image display dimensions
       const displayWidth = imgWidth * scale;
       const displayHeight = imgHeight * scale;
 
@@ -79,7 +82,7 @@
       posX = clamp(posX, -maxOffsetX, maxOffsetX);
       posY = clamp(posY, -maxOffsetY, maxOffsetY);
 
-      img.style.transform = translate(${posX}px, ${posY}px) scale(${scale});
+      img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
     }
 
     img.onload = () => {
@@ -92,6 +95,8 @@
       minScale = containerWidth / imgWidth;
       scale = minScale;
       lastScale = scale;
+      posX = 0;
+      posY = 0;
 
       // Center vertically if needed
       const scaledHeight = imgHeight * scale;
@@ -118,8 +123,6 @@
       if (e.touches.length === 2) {
         const newDistance = getDistance(e.touches);
         scale = lastScale * (newDistance / initialDistance);
-
-        // Clamp scale
         if (scale < minScale) scale = minScale;
       } else if (e.touches.length === 1) {
         const touch = e.touches[0];
@@ -130,9 +133,41 @@
       updateTransform();
     });
 
-    img.addEventListener('touchend', () => {
+    img.addEventListener('touchend', (e) => {
       lastX = posX;
       lastY = posY;
+
+      // Double-tap detection
+      const currentTime = new Date().getTime();
+      const tapGap = currentTime - lastTapTime;
+
+      if (e.changedTouches.length === 1 && tapGap < 300) {
+        const touch = e.changedTouches[0];
+        const rect = container.getBoundingClientRect();
+
+        const tapX = touch.clientX - rect.left - posX;
+        const tapY = touch.clientY - rect.top - posY;
+
+        if (scale > minScale) {
+          // Zoom out
+          scale = minScale;
+          posX = 0;
+          posY = 0;
+        } else {
+          // Zoom in centered around tap
+          const zoomScale = 2;
+          const scaleFactor = zoomScale / scale;
+          posX -= tapX * (scaleFactor - 1);
+          posY -= tapY * (scaleFactor - 1);
+          scale = zoomScale;
+        }
+
+        lastX = posX;
+        lastY = posY;
+        updateTransform();
+      }
+
+      lastTapTime = currentTime;
     });
   </script>
 </body>
