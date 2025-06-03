@@ -4,7 +4,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes">
   <meta charset="UTF-8">
   <title>Herzog & de Meuron | 637_Mood Board</title>
-  <link rel="shortcut icon" href="favicon.ico">
+ <link rel="shortcut icon" href="favicon.ico">
+
   <style>
     html, body {
       margin: 0;
@@ -32,7 +33,6 @@
       transform-origin: center center;
       display: block;
       position: absolute;
-      transition: transform 0.05s ease-out;
     }
   </style>
 </head>
@@ -44,23 +44,21 @@
   <script>
     const img = document.getElementById('zoom-image');
     const container = document.getElementById('container');
-
     let scale = 1;
     let minScale = 1;
-    let maxScale = 5;
     let lastScale = 1;
-
     let posX = 0, posY = 0;
     let lastX = 0, lastY = 0;
     let startX = 0, startY = 0;
     let initialDistance = null;
-
     let imgWidth = 0;
     let imgHeight = 0;
 
     function getDistance(touches) {
-      const [t1, t2] = touches;
-      return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const [touch1, touch2] = touches;
+      const dx = touch2.clientX - touch1.clientX;
+      const dy = touch2.clientY - touch1.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
     }
 
     function clamp(value, min, max) {
@@ -68,8 +66,10 @@
     }
 
     function updateTransform() {
+      // Calculate image display dimensions
       const displayWidth = imgWidth * scale;
       const displayHeight = imgHeight * scale;
+
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
 
@@ -79,19 +79,25 @@
       posX = clamp(posX, -maxOffsetX, maxOffsetX);
       posY = clamp(posY, -maxOffsetY, maxOffsetY);
 
-      img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+      img.style.transform = translate(${posX}px, ${posY}px) scale(${scale});
     }
 
     img.onload = () => {
       const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
       imgWidth = img.naturalWidth;
       imgHeight = img.naturalHeight;
 
+      // Fit image to width
       minScale = containerWidth / imgWidth;
       scale = minScale;
       lastScale = scale;
-      posX = 0;
-      posY = 0;
+
+      // Center vertically if needed
+      const scaledHeight = imgHeight * scale;
+      if (scaledHeight < containerHeight) {
+        posY = 0;
+      }
 
       updateTransform();
     };
@@ -109,43 +115,24 @@
 
     img.addEventListener('touchmove', (e) => {
       e.preventDefault();
-
       if (e.touches.length === 2) {
-        const [t1, t2] = e.touches;
         const newDistance = getDistance(e.touches);
-        const newScale = lastScale * (newDistance / initialDistance);
-        const clampedScale = clamp(newScale, minScale, maxScale);
+        scale = lastScale * (newDistance / initialDistance);
 
-        // Pinch midpoint (screen space)
-        const midX = (t1.clientX + t2.clientX) / 2;
-        const midY = (t1.clientY + t2.clientY) / 2;
-
-        // Translate midpoint to image space
-        const rect = container.getBoundingClientRect();
-        const imgMidX = midX - rect.left - posX;
-        const imgMidY = midY - rect.top - posY;
-
-        // Adjust offset based on scale change
-        const scaleChange = clampedScale / scale;
-        posX -= imgMidX * (scaleChange - 1);
-        posY -= imgMidY * (scaleChange - 1);
-
-        scale = clampedScale;
-        updateTransform();
-
+        // Clamp scale
+        if (scale < minScale) scale = minScale;
       } else if (e.touches.length === 1) {
         const touch = e.touches[0];
         posX = touch.clientX - startX;
         posY = touch.clientY - startY;
-        updateTransform();
       }
+
+      updateTransform();
     });
 
-    img.addEventListener('touchend', (e) => {
-      if (e.touches.length === 0) {
-        lastX = posX;
-        lastY = posY;
-      }
+    img.addEventListener('touchend', () => {
+      lastX = posX;
+      lastY = posY;
     });
   </script>
 </body>
