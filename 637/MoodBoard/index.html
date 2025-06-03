@@ -115,17 +115,33 @@
 
     img.addEventListener('touchmove', (e) => {
       e.preventDefault();
-      if (e.touches.length === 2) {
-        const newDistance = getDistance(e.touches);
-        scale = lastScale * (newDistance / initialDistance);
+     if (e.touches.length === 2) {
+  const touch1 = e.touches[0];
+  const touch2 = e.touches[1];
+  const newDistance = getDistance(e.touches);
+  const newScale = lastScale * (newDistance / initialDistance);
 
-        // Clamp scale
-        if (scale < minScale) scale = minScale;
-      } else if (e.touches.length === 1) {
-        const touch = e.touches[0];
-        posX = touch.clientX - startX;
-        posY = touch.clientY - startY;
-      }
+  // Clamp scale
+  if (newScale < minScale) scale = minScale;
+  else scale = newScale;
+
+  // Calculate midpoint of the pinch gesture
+  const midX = (touch1.clientX + touch2.clientX) / 2;
+  const midY = (touch1.clientY + touch2.clientY) / 2;
+
+  // Get offset from center of the image container
+  const rect = container.getBoundingClientRect();
+  const offsetX = midX - rect.left - rect.width / 2;
+  const offsetY = midY - rect.top - rect.height / 2;
+
+  // Calculate scale delta
+  const scaleDelta = scale / lastScale;
+
+  // Adjust pan so the zoom appears to focus around the pinch midpoint
+  posX = (posX - offsetX) * scaleDelta + offsetX;
+  posY = (posY - offsetY) * scaleDelta + offsetY;
+}
+
 
       updateTransform();
     });
