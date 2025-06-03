@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=10.0, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta charset="UTF-8">
   <title>Herzog & de Meuron | 637_Mood Board</title>
- <link rel="shortcut icon" href="favicon.ico">
+  <link rel="shortcut icon" href="favicon.ico">
 
   <style>
     html, body {
@@ -33,6 +33,7 @@
       transform-origin: center center;
       display: block;
       position: absolute;
+      transition: transform 0.05s ease-out;
     }
   </style>
 </head>
@@ -44,6 +45,7 @@
   <script>
     const img = document.getElementById('zoom-image');
     const container = document.getElementById('container');
+
     let scale = 1;
     let minScale = 1;
     let lastScale = 1;
@@ -66,7 +68,6 @@
     }
 
     function updateTransform() {
-      // Calculate image display dimensions
       const displayWidth = imgWidth * scale;
       const displayHeight = imgHeight * scale;
 
@@ -79,7 +80,7 @@
       posX = clamp(posX, -maxOffsetX, maxOffsetX);
       posY = clamp(posY, -maxOffsetY, maxOffsetY);
 
-      img.style.transform = translate(${posX}px, ${posY}px) scale(${scale});
+      img.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
     }
 
     img.onload = () => {
@@ -88,12 +89,14 @@
       imgWidth = img.naturalWidth;
       imgHeight = img.naturalHeight;
 
-      // Fit image to width
+      // Fit image to screen width
       minScale = containerWidth / imgWidth;
       scale = minScale;
       lastScale = scale;
+      posX = 0;
+      posY = 0;
 
-      // Center vertically if needed
+      // Optional: adjust vertical centering if needed
       const scaledHeight = imgHeight * scale;
       if (scaledHeight < containerHeight) {
         posY = 0;
@@ -118,9 +121,7 @@
       if (e.touches.length === 2) {
         const newDistance = getDistance(e.touches);
         scale = lastScale * (newDistance / initialDistance);
-
-        // Clamp scale
-        if (scale < minScale) scale = minScale;
+        scale = clamp(scale, minScale, 5); // Optional max scale
       } else if (e.touches.length === 1) {
         const touch = e.touches[0];
         posX = touch.clientX - startX;
